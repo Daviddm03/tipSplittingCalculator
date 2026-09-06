@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tip Splitting Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet"
+    >
+</head>
+<body>
+    <main class="loading-screen">
+        <div class="loading-content">
+            <p class="eyebrow">TIP SPLITTING</p>
+            <h1>CALCULATOR</h1>
+            <div class="loader">
+                <div class="loader-bar"></div>
+            </div>
+            <p class="loading-text">
+                INITIALIZING... <span id="loading-percentage">0%</span>
+            </p>
+        </div>
+    </main>
+    <section class="app">
+        <main class="calculation">
+            <div class="calculation-intro">
+                <p class="calculation-label">NEW CALCULATION</p>
+                <h2>Start a new<br>tip distribution.</h2>
+                <p class="calculation-description">
+                    Enter the period and total tips to begin.
+                </p>
+            </div>
+            <form class="calculation-form">
+                <div class="form-field">
+                    <label>PERIOD</label>
+                    <button type="button" class="period-selector" id="period-selector">
+                        <span id="selected-period">SELECT PERIOD</span>
+                        <span class="period-arrow">↓</span>
+                    </button>
+                    <p class="field-error" id="period-error"></p>
+                    <div class="period-picker" id="period-picker">
+                        <div class="period-picker-header">
+                            <button type="button" class="year-button" id="previous-year">
+                                ‹
+                            </button>
+                            <span id="picker-year">2026</span>
+                            <button type="button" class="year-button" id="next-year">
+                                ›
+                            </button>
+                        </div>
+                        <div class="months-grid" id="months-grid">
+                            <button type="button" data-month="0">JAN</button>
+                            <button type="button" data-month="1">FEB</button>
+                            <button type="button" data-month="2">MAR</button>
+                            <button type="button" data-month="3">APR</button>
+                            <button type="button" data-month="4">MAY</button>
+                            <button type="button" data-month="5">JUN</button>
+                            <button type="button" data-month="6">JUL</button>
+                            <button type="button" data-month="7">AUG</button>
+                            <button type="button" data-month="8">SEP</button>
+                            <button type="button" data-month="9">OCT</button>
+                            <button type="button" data-month="10">NOV</button>
+                            <button type="button" data-month="11">DEC</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label for="tips">TOTAL TIPS</label>
+                    <div class="tips-input">
+                        <span class="currency">€</span>
+                        <input
+                            type="number"
+                            id="tips"
+                            name="tips"
+                            placeholder="0.00"
+                            min="0"
+                            step="0.01"
+                        >
+                    </div>
+                    <p class="field-error" id="tips-error"></p>
+                </div>
+                <button type="submit" class="continue-button">
+                    CONTINUE
+                </button>
+            </form>
+        </main>
+    </section>
+    <script src="script.js"></script>
+</body>
+</html>
