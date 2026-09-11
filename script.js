@@ -2,6 +2,13 @@ const loadingScreen = document.querySelector(".loading-screen");
 const loadingBar = document.querySelector(".loader-bar");
 const loadingPercentage = document.querySelector("#loading-percentage");
 const app = document.querySelector(".app");
+const calculationScreen = document.querySelector(".app");
+const employeeSelectionScreen = document.querySelector(".employee-selection");
+
+function goToEmployeeSelection() {
+    calculationScreen.classList.add("hidden");
+    employeeSelectionScreen.classList.add("visible");
+}
 
 let progress = 0;
 
@@ -146,6 +153,7 @@ calculationForm.addEventListener("submit", (event) => {
         "Total Tips:",
         `€ ${formatMoney(tips)}`
     );
+    goToEmployeeSelection();
 });
 
 const employees = [
@@ -490,11 +498,44 @@ let selectedOutlet = null;
 
 /* EMPLOYEE PANEL */
 
+/* =========================
+   EMPLOYEE PANEL
+========================= */
+
 const employeePanel = document.createElement("div");
 
 employeePanel.classList.add("employee-panel");
-employeeList.parentElement.appendChild(employeePanel);
+
+const employeeSelection = employeeList.parentElement;
+
+employeeSelection.appendChild(employeePanel);
+
 employeePanel.appendChild(employeeList);
+
+const continueEmployeesButton = document.createElement("button");
+
+continueEmployeesButton.textContent = "CONTINUE";
+
+continueEmployeesButton.classList.add("continue-employees-button");
+
+employeePanel.appendChild(continueEmployeesButton);
+
+const employeeError = document.createElement("p");
+
+employeeError.textContent = "SELECT AT LEAST ONE EMPLOYEE";
+
+employeeError.classList.add("employee-error");
+
+employeePanel.appendChild(employeeError);
+
+continueEmployeesButton.addEventListener("click", () => {
+    if (selectedEmployees.length === 0) {
+        employeeError.classList.add("visible");
+        return;
+    }
+    employeeError.classList.remove("visible");
+    console.log("Selected employees:", selectedEmployees);
+});
 
 /* EMPLOYEE HEADER */
 
@@ -551,6 +592,7 @@ selectAllButton.addEventListener("click", () => {
         });
     }
     updateSelectedCount();
+    employeeError.classList.remove("visible");
     renderEmployees(visibleEmployees);
 });
 
@@ -570,6 +612,8 @@ allOutletsButton.addEventListener("click", () => {
     renderEmployees(employees);
 });
 outletList.appendChild(allOutletsButton);
+allOutletsButton.classList.add("active");
+renderEmployees(employees);
 
 /* GET VISIBLE EMPLOYEE */
 
@@ -593,6 +637,7 @@ function updateSelectedCount() {
 
 function renderEmployees(employeeArray) {
     employeeList.innerHTML = "";
+    employeeList.classList.toggle("scrollable", selectedOutlet === null);
     employeeArray.forEach((employee) => {
 
         const employeeElement = document.createElement("div");
@@ -625,7 +670,7 @@ function renderEmployees(employeeArray) {
             } else {
                 selectedEmployees.push(employee);
             }
-
+            employeeError.classList.remove("visible");
             const nowSelected = selectedEmployees.includes(employee);
 
             employeeElement.classList.toggle("selected", nowSelected);
