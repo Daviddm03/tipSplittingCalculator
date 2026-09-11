@@ -100,6 +100,123 @@
         <div class="outlet-list" id="outlet-list"></div>
         <div class="employee-list" id="employee-list"></div>
     </section>
+    <section class="review-calculation">
+        <div class="review-intro">
+            <p class="review-label">REVIEW CALCULATION</p>
+            <h2>
+                Check everything<br>
+                before calculating.
+            </h2>
+        </div>
+        <div class="review-summary">
+            <div class="review-field">
+                <span>PERIOD</span>
+                <strong id="review-period">—</strong>
+            </div>
+            <div class="review-field">
+                <span>TOTAL TIPS</span>
+                <strong id="review-tips">—</strong>
+            </div>
+            <div class="review-field">
+                <span>EMPLOYEES</span>
+                <strong id="review-count">—</strong>
+            </div>
+        </div>
+        <div class="review-team">
+            <div class="review-team-header">
+                <span>TEAM</span>
+            </div>
+            <div
+                class="review-employee-list"
+                id="review-employee-list"
+            ></div>
+        </div>
+        <button
+            type="button"
+            class="calculate-button"
+        >
+            CALCULATE
+        </button>
+    </section>
+    <section class="calculating-screen">
+
+        <div class="loading-content">
+
+            <p class="eyebrow">TIP SPLITTING</p>
+
+            <h1>CALCULATOR</h1>
+
+            <div class="loader">
+                <div class="calculating-loader-bar"></div>
+            </div>
+
+            <p class="loading-text">
+                DISTRIBUTING TIPS...
+                <span id="calculating-percentage">0%</span>
+            </p>
+
+        </div>
+
+    </section>
+    <section class="result-screen">
+
+        <div class="result-intro">
+            <p class="result-label">CALCULATION RESULT</p>
+
+            <h2>
+                Distribution<br>
+                completed.
+            </h2>
+        </div>
+
+        <div class="result-summary">
+
+            <div class="result-field">
+                <span>PERIOD</span>
+                <strong id="result-period">—</strong>
+            </div>
+
+            <div class="result-field">
+                <span>TOTAL TIPS</span>
+                <strong id="result-tips">—</strong>
+            </div>
+
+            <div class="result-field">
+                <span>EMPLOYEES</span>
+                <strong id="result-count">—</strong>
+            </div>
+
+        </div>
+
+        <div class="result-main">
+
+            <div class="result-main-label">
+                AMOUNT PER EMPLOYEE
+            </div>
+
+            <strong id="result-amount">€ 0.00</strong>
+
+        </div>
+        <div class="result-actions">
+
+            <button
+                type="button"
+                class="download-pdf-button"
+            >
+                DOWNLOAD PDF
+            </button>
+
+            <button
+                type="button"
+                class="new-calculation-button"
+            >
+                NEW CALCULATION
+            </button>
+
+        </div>
+
+    </section>
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>    
     <script src="script.js"></script>
 </body>
 </html>
