@@ -73,15 +73,17 @@
                     <div class="tips-input">
                         <span class="currency">€</span>
                         <input
-                            type="number"
+                            type="text"
+                            inputmode="decimal"
+                            autocomplete="off"
+                            aria-describedby="tips-error"
                             id="tips"
                             name="tips"
                             placeholder="0.00"
-                            min="0"
-                            step="0.01"
+
                         >
                     </div>
-                    <p class="field-error" id="tips-error"></p>
+                    <p class="field-error" id="tips-error" role="alert"></p>
                 </div>
                 <button type="submit" class="continue-button">
                     CONTINUE
@@ -120,6 +122,10 @@
             <div class="review-field">
                 <span>EMPLOYEES</span>
                 <strong id="review-count">—</strong>
+            </div>
+            <div class="review-field">
+                <span>TOTAL WORKED DAYS</span>
+                <strong id="review-days">—</strong>
             </div>
         </div>
         <div class="review-team">
@@ -185,18 +191,30 @@
                 <span>EMPLOYEES</span>
                 <strong id="result-count">—</strong>
             </div>
+            <div class="result-field">
+                <span>TOTAL WORKED DAYS</span>
+                <strong id="result-days">—</strong>
+            </div>
 
         </div>
 
         <div class="result-main">
 
             <div class="result-main-label">
-                AMOUNT PER EMPLOYEE
+                VALUE PER DAY
             </div>
 
-            <strong id="result-amount">€ 0.00</strong>
+            <strong id="result-amount">—</strong>
+            <p class="distribution-note">Total tips ÷ total worked days. This rate is rounded for display only.</p>
+            <p class="distribution-note">Payments are proportional to days worked. Residual cents go to the largest remainders, then the lowest employee ID.</p>
 
         </div>
+        <div class="result-team">
+            <div class="review-team-header"><span>TEAM · DAYS WORKED · PAYMENT</span></div>
+            <div id="result-employee-list"></div>
+            <p class="distribution-total">TOTAL DISTRIBUTED <strong id="result-total">—</strong></p>
+        </div>
+        <p id="pdf-error" class="pdf-error" role="alert"></p>
         <div class="result-actions">
 
             <button
@@ -217,6 +235,7 @@
 
     </section>
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>    
+    <script src="distribution.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

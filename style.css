@@ -1376,3 +1376,39 @@ body.loading {
     border-color: #555;
     color: #f5f5f5;
 }
+/* Days-based distribution: retain the existing palette and typography. */
+.employee { flex: 0 0 auto; grid-template-columns: minmax(0, 1fr) 120px; gap: 24px; padding-top: 12px; padding-bottom: 12px; }
+.employee-choice { display: flex; align-items: center; gap: 12px; min-height: 44px; cursor: pointer; min-width: 0; }
+.employee-choice input { flex: 0 0 auto; width: 18px; height: 18px; accent-color: #8C4A3C; }
+.employee-details { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.employee-list .employee-details span { text-align: left; overflow-wrap: anywhere; }
+.days-field { display: flex; flex-direction: column; gap: 6px; }
+.days-field[hidden] { display: none; }
+.employee-list .employee .days-field span:first-child { font-size: 9px; letter-spacing: 0.08em; color: #969696; }
+.days-input { width: 100%; min-width: 0; min-height: 44px; padding: 8px 12px; border: 1px solid #555; border-radius: 4px; background: #0d0d0d; color: #f5f5f5; font: inherit; font-size: 16px; }
+.days-input[aria-invalid="true"] { border-color: #c96f6f; }
+.employee-choice input:focus-visible, .days-input:focus-visible,
+.outlet-list button:focus-visible, .employee-actions button:focus-visible { outline: 2px solid #A45C4C; outline-offset: 4px; }
+.review-summary, .result-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.review-field, .result-field, .result-main, .employee-panel, .result-team { min-width: 0; }
+.review-field strong, .result-field strong, .result-main strong { overflow-wrap: anywhere; }
+.distribution-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 120px; align-items: center; gap: 16px; min-height: 64px; padding: 16px; border-bottom: 1px solid #292929; font-size: 12px; color: #969696; }
+.distribution-row.with-amount { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 120px minmax(120px, auto); }
+.distribution-row span { overflow-wrap: anywhere; }
+.distribution-row span:first-child { color: #f5f5f5; font-size: 14px; font-weight: 500; }
+.distribution-row span:last-child { text-align: right; }
+.result-team, .pdf-error { grid-column: 1 / -1; }
+.distribution-note { color: #969696; font-size: 12px; line-height: 1.6; }
+.distribution-total { display: flex; justify-content: space-between; gap: 16px; padding: 24px 16px; font-size: 12px; }
+.distribution-total strong { overflow-wrap: anywhere; }
+.pdf-error { color: #c96f6f; font-size: 12px; }
+.pdf-error:empty { display: none; }
+@media (max-width: 768px) {
+    .review-summary, .result-summary { grid-template-columns: 1fr; }
+    .employee { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .days-field { width: 120px; margin-left: 30px; }
+    .distribution-row, .distribution-row.with-amount { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    .distribution-row span:last-child { text-align: left; }
+    .distribution-total { flex-direction: column; }
+    .result-main strong { font-size: clamp(28px, 10vw, 56px); }
+}
