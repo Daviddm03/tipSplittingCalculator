@@ -1,241 +1,375 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tip Splitting Calculator</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
-        rel="stylesheet"
-    >
-</head>
-<body>
-    <main class="loading-screen">
-        <div class="loading-content">
-            <p class="eyebrow">TIP SPLITTING</p>
-            <h1>CALCULATOR</h1>
-            <div class="loader">
-                <div class="loader-bar"></div>
-            </div>
-            <p class="loading-text">
-                INITIALIZING... <span id="loading-percentage">0%</span>
-            </p>
-        </div>
-    </main>
-    <section class="app">
-        <main class="calculation">
-            <div class="calculation-intro">
-                <p class="calculation-label">NEW CALCULATION</p>
-                <h2>Start a new<br>tip distribution.</h2>
-                <p class="calculation-description">
-                    Enter the period and total tips to begin.
-                </p>
-            </div>
-            <form class="calculation-form" id="calculation-form">
-                <div class="form-field">
-                    <label>PERIOD</label>
-                    <button type="button" class="period-selector" id="period-selector">
-                        <span id="selected-period">SELECT PERIOD</span>
-                        <span class="period-arrow">↓</span>
-                    </button>
-                    <p class="field-error" id="period-error"></p>
-                    <div class="period-picker" id="period-picker">
-                        <div class="period-picker-header">
-                            <button type="button" class="year-button" id="previous-year">
-                                ‹
-                            </button>
-                            <span id="picker-year">2026</span>
-                            <button type="button" class="year-button" id="next-year">
-                                ›
-                            </button>
-                        </div>
-                        <div class="months-grid" id="months-grid">
-                            <button type="button" data-month="0">JAN</button>
-                            <button type="button" data-month="1">FEB</button>
-                            <button type="button" data-month="2">MAR</button>
-                            <button type="button" data-month="3">APR</button>
-                            <button type="button" data-month="4">MAY</button>
-                            <button type="button" data-month="5">JUN</button>
-                            <button type="button" data-month="6">JUL</button>
-                            <button type="button" data-month="7">AUG</button>
-                            <button type="button" data-month="8">SEP</button>
-                            <button type="button" data-month="9">OCT</button>
-                            <button type="button" data-month="10">NOV</button>
-                            <button type="button" data-month="11">DEC</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-field">
-                    <label for="tips">TOTAL TIPS</label>
-                    <div class="tips-input">
-                        <span class="currency">€</span>
-                        <input
-                            type="text"
-                            inputmode="decimal"
-                            autocomplete="off"
-                            aria-describedby="tips-error"
-                            id="tips"
-                            name="tips"
-                            placeholder="0.00"
+    <head>
+        <meta charset="UTF-8">
 
-                        >
-                    </div>
-                    <p class="field-error" id="tips-error" role="alert"></p>
-                </div>
-                <button type="submit" class="continue-button">
-                    CONTINUE
-                </button>
-            </form>
-        </main>
-    </section>
-    <section class="employee-selection">
-        <div class="employee-intro">
-            <p class="employee-label">SELECT EMPLOYEES</p>
-            <h2>
-                Choose who participated in<br>
-                this tip distribution.
-            </h2>
-        </div>
-        <div class="outlet-list" id="outlet-list"></div>
-        <div class="employee-list" id="employee-list"></div>
-    </section>
-    <section class="review-calculation">
-        <div class="review-intro">
-            <p class="review-label">REVIEW CALCULATION</p>
-            <h2>
-                Check everything<br>
-                before calculating.
-            </h2>
-        </div>
-        <div class="review-summary">
-            <div class="review-field">
-                <span>PERIOD</span>
-                <strong id="review-period">—</strong>
-            </div>
-            <div class="review-field">
-                <span>TOTAL TIPS</span>
-                <strong id="review-tips">—</strong>
-            </div>
-            <div class="review-field">
-                <span>EMPLOYEES</span>
-                <strong id="review-count">—</strong>
-            </div>
-            <div class="review-field">
-                <span>TOTAL WORKED DAYS</span>
-                <strong id="review-days">—</strong>
-            </div>
-        </div>
-        <div class="review-team">
-            <div class="review-team-header">
-                <span>TEAM</span>
-            </div>
-            <div
-                class="review-employee-list"
-                id="review-employee-list"
-            ></div>
-        </div>
-        <button
-            type="button"
-            class="calculate-button"
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
         >
-            CALCULATE
-        </button>
-    </section>
-    <section class="calculating-screen">
 
-        <div class="loading-content">
+        <meta
+            name="description"
+            content="Tip distribution management for hospitality operations."
+        >
 
-            <p class="eyebrow">TIP SPLITTING</p>
+        <title>Tip Split — Distribution</title>
 
-            <h1>CALCULATOR</h1>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
 
-            <div class="loader">
-                <div class="calculating-loader-bar"></div>
+        <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossorigin
+        >
+
+        <link
+            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+            rel="stylesheet"
+        >
+
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/font/lucide.css"
+        >
+
+        <link
+            rel="stylesheet"
+            href="style.css"
+        >
+    </head>
+
+    <body>
+        <a class="skip-link" href="#main-content">Skip to workspace</a>
+        <header class="app-header">
+        <div class="header-inner">
+            <div class="identity">
+                <a class="product-name" href="#distribution" data-view="distribution">Tip Split</a>
+                <span class="property-name">Tivoli Porto · Demo</span>
             </div>
-
-            <p class="loading-text">
-                DISTRIBUTING TIPS...
-                <span id="calculating-percentage">0%</span>
-            </p>
-
+            <nav class="main-navigation" aria-label="Main navigation">
+                <a class="active" href="#distribution" data-view="distribution" aria-current="page">Distribution</a>
+                <a href="#employees" data-view="employees">Employees</a>
+                <a href="#history" data-view="history">History</a>
+            </nav>
+            <a class="settings-button" href="#settings" data-view="settings" aria-label="Settings">
+                <i class="icon icon-settings" aria-hidden="true"></i><span>Settings</span>
+            </a>
         </div>
+    </header>
 
-    </section>
-    <section class="result-screen">
-
-        <div class="result-intro">
-            <p class="result-label">CALCULATION RESULT</p>
-
-            <h2>
-                Distribution<br>
-                completed.
-            </h2>
-        </div>
-
-        <div class="result-summary">
-
-            <div class="result-field">
-                <span>PERIOD</span>
-                <strong id="result-period">—</strong>
-            </div>
-
-            <div class="result-field">
-                <span>TOTAL TIPS</span>
-                <strong id="result-tips">—</strong>
-            </div>
-
-            <div class="result-field">
-                <span>EMPLOYEES</span>
-                <strong id="result-count">—</strong>
-            </div>
-            <div class="result-field">
-                <span>TOTAL WORKED DAYS</span>
-                <strong id="result-days">—</strong>
-            </div>
-
-        </div>
-
-        <div class="result-main">
-
-            <div class="result-main-label">
-                VALUE PER DAY
-            </div>
-
-            <strong id="result-amount">—</strong>
-            <p class="distribution-note">Total tips ÷ total worked days. This rate is rounded for display only.</p>
-            <p class="distribution-note">Payments are proportional to days worked. Residual cents go to the largest remainders, then the lowest employee ID.</p>
-
-        </div>
-        <div class="result-team">
-            <div class="review-team-header"><span>TEAM · DAYS WORKED · PAYMENT</span></div>
-            <div id="result-employee-list"></div>
-            <p class="distribution-total">TOTAL DISTRIBUTED <strong id="result-total">—</strong></p>
-        </div>
-        <p id="pdf-error" class="pdf-error" role="alert"></p>
-        <div class="result-actions">
-
-            <button
-                type="button"
-                class="download-pdf-button"
+        <main class="main" id="main-content" tabindex="-1">
+            <section
+                class="distribution-view"
+                id="distribution-view"
             >
-                DOWNLOAD PDF
-            </button>
+                <header class="page-header">
+                <div>
+                    <h1 id="distribution-heading" tabindex="-1">September distribution</h1>
+                    <div class="record-meta">
+                        <span class="record-reference">TS-DEMO-2026-09</span>
+                        <span class="meta-separator" aria-hidden="true">·</span>
+                        <span class="record-status">Draft</span>
+                    </div>
+                </div>
+                <a class="text-action" href="#history" data-view="history">View history <i class="icon icon-arrow-up-right" aria-hidden="true"></i></a>
+            </header>
+            <p class="storage-notice" id="storage-notice" role="alert" hidden></p>
 
-            <button
-                type="button"
-                class="new-calculation-button"
+                <section class="setup" aria-label="Distribution inputs">
+                <div class="setup-field">
+                    <span class="field-label" id="period-label">Period</span>
+                    <div class="custom-control month-control" id="period-control">
+                        <button type="button" class="custom-control-trigger" id="period-trigger" aria-labelledby="period-label period-trigger-label" aria-expanded="false" aria-controls="period-menu">
+                            <span id="period-trigger-label">September 2026</span><i class="icon icon-chevron-down" aria-hidden="true"></i>
+                        </button>
+                        <div class="custom-menu month-menu" id="period-menu" role="group" aria-label="Choose distribution month" hidden>
+                            <div class="month-menu-header">
+                                <button type="button" class="month-navigation" id="previous-year" aria-label="Previous year"><i class="icon icon-chevron-left" aria-hidden="true"></i></button>
+                                <strong id="month-picker-year" aria-live="polite">2026</strong>
+                                <button type="button" class="month-navigation" id="next-year" aria-label="Next year"><i class="icon icon-chevron-right" aria-hidden="true"></i></button>
+                            </div>
+                            <div class="month-grid" id="month-grid"></div>
+                            <div class="month-menu-footer"><button type="button" id="current-month-button">Current month</button></div>
+                        </div>
+                        <input id="period" name="period" type="hidden" value="2026-09">
+                    </div>
+                </div>
+                <div class="setup-field">
+                    <label for="tips">Tip pool</label>
+                    <div class="currency-input"><span aria-hidden="true">€</span><input id="tips" name="tips" type="text" inputmode="decimal" value="8420.50" autocomplete="off" aria-describedby="tips-error"></div>
+                    <small id="tips-error" role="alert"></small>
+                </div>
+                <div class="setup-context">
+                    <div><span>Scope</span><strong>Hotel-wide pool</strong></div>
+                    <div><span>Allocation</span><strong>Worked days</strong></div>
+                </div>
+            </section>
+
+                <section class="attendance-line" aria-label="Demo attendance provenance">
+                <div class="attendance-information">
+                    <i class="icon icon-database" aria-hidden="true"></i>
+                    <div><strong id="attendance-coverage">September attendance</strong><span id="attendance-source">Synthetic attendance · Generated locally</span></div>
+                </div>
+                <div class="attendance-exception">
+                    <span id="attendance-attention-count"></span>
+                    <button type="button" id="attendance-details-button">View details</button>
+                </div>
+            </section>
+
+                <section class="employees-workspace" aria-labelledby="employees-heading">
+                <header class="employees-heading">
+                    <div>
+                        <div class="heading-line"><h2 id="employees-heading">Employees</h2><span id="included-count"></span></div>
+                        <p>Filters change the view, not the hotel-wide pool. Hours are attendance evidence only.</p>
+                    </div>
+                    <button type="button" class="bulk-action" id="include-visible-button">Include visible</button>
+                </header>
+                <div class="employee-toolbar">
+                    <label class="search-control">
+                        <span class="sr-only">Search employees by name, ID, role or outlet</span><i class="icon icon-search" aria-hidden="true"></i>
+                        <input id="employee-search" name="search" type="search" placeholder="Search name, ID, role or outlet" autocomplete="off">
+                    </label>
+                    <div class="filter-control"><span class="field-label" id="outlet-label">Outlet</span><div class="custom-control"><button type="button" class="custom-control-trigger" id="outlet-filter" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="outlet-menu" aria-labelledby="outlet-label outlet-trigger-label"><span id="outlet-trigger-label">All outlets</span><i class="icon icon-chevron-down" aria-hidden="true"></i></button><div class="custom-menu select-menu" id="outlet-menu" role="listbox" aria-labelledby="outlet-label" hidden></div></div></div>
+                    <div class="filter-control"><span class="field-label" id="status-label">Status</span><div class="custom-control"><button type="button" class="custom-control-trigger" id="status-filter" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="status-menu" aria-labelledby="status-label status-trigger-label"><span id="status-trigger-label">All employees</span><i class="icon icon-chevron-down" aria-hidden="true"></i></button><div class="custom-menu select-menu" id="status-menu" role="listbox" aria-labelledby="status-label" hidden></div></div></div>
+                </div>
+                <div class="table-container" tabindex="0" role="region" aria-label="Employee attendance and payouts; scroll horizontally on smaller screens">
+                    <table class="employee-table">
+                        <caption class="sr-only">Attendance for visible employees. Payouts use included worked days only.</caption>
+                        <colgroup><col class="include-column"><col class="employee-column"><col class="outlet-column"><col class="days-column"><col class="hours-column"><col class="payout-column"></colgroup>
+                        <thead><tr><th scope="col"><span class="sr-only">Include</span></th><th scope="col">Employee</th><th scope="col">Outlet</th><th scope="col" class="numeric-column">Days</th><th scope="col" class="numeric-column">Hours</th><th scope="col" class="numeric-column">Payout</th></tr></thead>
+                        <tbody id="employee-rows"></tbody>
+                        <tfoot><tr><th scope="row" colspan="3"><span id="visible-count"></span></th><td class="numeric-cell" id="footer-days">—</td><td class="numeric-cell" id="footer-hours">—</td><td class="numeric-cell" id="footer-payout">—</td></tr></tfoot>
+                    </table>
+                </div>
+                <div class="table-note"><span id="table-note-employees"></span><span id="table-note-days"></span></div>
+                <p class="workflow-error" id="workflow-error" role="alert"></p>
+                <p class="workflow-notice" id="workflow-notice" role="status"></p>
+                <div class="action-bar">
+                    <div class="action-summary"><div>Included <strong id="action-employees"></strong></div><div>Eligible days <strong id="action-days"></strong></div></div>
+                    <div class="reconciliation" id="reconciliation" aria-label="Distribution reconciliation">
+                        <div class="reconciliation-item"><span>Pool</span><strong id="summary-tips">—</strong></div>
+                        <div class="reconciliation-item" id="allocated-summary" hidden><span>Allocated</span><strong id="summary-allocated">—</strong></div>
+                        <div class="reconciliation-item" id="difference-summary" hidden><span>Difference</span><strong id="summary-difference">—</strong></div>
+                        <div class="preview-status" id="preview-status" hidden><strong>Recalculation required</strong></div>
+                    </div>
+                    <button type="button" class="primary-action" id="calculate-button">Calculate payouts <i class="icon icon-arrow-right" aria-hidden="true"></i></button>
+                </div>
+                <p class="sr-only" id="workspace-status" role="status" aria-atomic="true"></p>
+            </section>
+        </section>
+
+        <section
+                class="history-view"
+                id="history-view"
+                hidden
             >
-                NEW CALCULATION
-            </button>
+                <header class="page-header">
+                    <div>
+                        <h1 id="history-heading" tabindex="-1">
+                            Distribution history
+                        </h1>
 
+                        <div class="record-meta">
+                            <span id="history-count">
+                                Past confirmed distributions
+                            </span>
+                        </div>
+                    </div>
+                </header>
+
+                <div
+                    class="history-feedback"
+                    id="history-feedback"
+                    role="status"
+                ></div>
+
+                <section
+                    class="history-list"
+                    id="history-list"
+                    aria-labelledby="history-heading"
+                >
+                    <div
+                        class="history-table-container"
+                        tabindex="0"
+                        role="region"
+                        aria-label="Confirmed distribution history"
+                    >
+                        <table class="history-table">
+                            <caption class="sr-only">
+                                Confirmed tip distributions
+                            </caption>
+
+                            <thead>
+                                <tr>
+                                    <th scope="col">Reference</th>
+                                    <th scope="col">Period</th>
+                                    <th scope="col">Employees</th>
+                                    <th scope="col">Pool</th>
+                                    <th scope="col">Confirmed</th>
+                                    <th scope="col">
+                                        <span class="sr-only">Open</span>
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="history-rows"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section
+                    class="history-detail"
+                    id="history-detail"
+                    aria-labelledby="history-detail-heading"
+                    hidden
+                >
+                    <button
+                        type="button"
+                        class="history-back"
+                        id="history-back"
+                    >
+                        <i
+                            class="icon icon-arrow-left"
+                            aria-hidden="true"
+                        ></i>
+                        All distributions
+                    </button>
+
+                    <header class="history-detail-header">
+                        <div>
+                            <h2 id="history-detail-heading">
+                                Distribution
+                            </h2>
+
+                            <span
+                                class="record-reference"
+                                id="history-detail-reference"
+                            ></span>
+                        </div>
+
+                        <strong id="history-detail-pool">—</strong>
+                    </header>
+
+                    <dl class="history-summary">
+                        <div>
+                            <dt>Period</dt>
+                            <dd id="history-detail-period">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Employees</dt>
+                            <dd id="history-detail-employees">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Allocated</dt>
+                            <dd id="history-detail-allocated">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Difference</dt>
+                            <dd id="history-detail-difference">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Allocation</dt>
+                            <dd id="history-detail-method">—</dd>
+                        </div>
+
+                        <div>
+                            <dt>Attendance source</dt>
+                            <dd id="history-detail-source">—</dd>
+                        </div>
+                    </dl>
+
+                    <div
+                        class="history-table-container history-items-container"
+                        tabindex="0"
+                        role="region"
+                        aria-label="Distribution employee payouts"
+                    >
+                        <table class="history-table history-items-table">
+                            <caption class="sr-only">
+                                Employee payouts for this distribution
+                            </caption>
+
+                            <thead>
+                                <tr>
+                                    <th scope="col">Employee</th>
+                                    <th scope="col">Outlet</th>
+                                    <th scope="col">Role</th>
+                                    <th scope="col">Days</th>
+                                    <th scope="col">Hours</th>
+                                    <th scope="col">Payout</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="history-detail-rows"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+
+            <section
+                class="placeholder-view"
+                id="placeholder-view"
+                hidden
+            >
+                <h1 id="placeholder-title" tabindex="-1">
+                    Employees
+                </h1>
+
+                <p>
+                    This workspace is not part of the Distribution demo yet.
+                </p>
+            </section>
+        </main>
+
+        <dialog class="confirm-dialog" id="confirm-dialog" aria-labelledby="confirmation-heading" aria-describedby="confirmation-message">
+        <header><div><h2 id="confirmation-heading">Confirm distribution</h2><span id="confirm-reference"></span></div><button type="button" class="dialog-close" id="close-dialog" aria-label="Close confirmation"><i class="icon icon-x" aria-hidden="true"></i></button></header>
+        <dl class="confirmation-details">
+            <div class="confirmation-total"><dt>Tip pool</dt><dd id="confirm-total">—</dd></div>
+            <div><dt>Period</dt><dd id="confirm-period"></dd></div>
+            <div><dt>Scope</dt><dd>Hotel-wide pool</dd></div>
+            <div><dt>Included employees</dt><dd id="confirm-employees"></dd></div>
+            <div><dt>Eligible worked days</dt><dd id="confirm-days"></dd></div>
+        </dl>
+        <p class="confirmation-message" id="confirmation-message">Confirmation creates a read-only distribution record using the attendance data for this period.</p>
+        <p class="workflow-error" id="confirm-error" role="alert"></p>
+        <footer><button type="button" class="secondary-action" id="cancel-confirmation">Return to review</button><button type="button" class="primary-action" id="confirm-distribution">Confirm distribution</button></footer>
+    </dialog>
+    <dialog class="attendance-dialog" id="attendance-dialog" aria-labelledby="attendance-employee-name" aria-describedby="attendance-employee-context attendance-demo-note">
+        <header class="attendance-dialog-header">
+            <div><div class="attendance-dialog-identity"><h2 id="attendance-employee-name">Employee</h2><span id="attendance-employee-reference"></span></div><p id="attendance-employee-context"></p></div>
+            <button type="button" class="dialog-close" id="close-attendance-dialog" aria-label="Close attendance details"><i class="icon icon-x" aria-hidden="true"></i></button>
+        </header>
+        <div class="attendance-dialog-period">
+            <div><span>Attendance period</span><strong id="attendance-period-label"></strong></div>
+            <div class="attendance-period-summary"><div><span>Worked days</span><strong id="attendance-total-days"></strong></div><div><span>Total hours</span><strong id="attendance-total-hours"></strong></div></div>
         </div>
+        <p class="attendance-review-note" id="attendance-review-note" hidden></p>
+        <div class="attendance-table-wrapper" tabindex="0" role="region" aria-label="Daily attendance; scroll to view all dates">
+            <table class="attendance-table">
+                <caption class="sr-only">Daily attendance. Clock-out marked +1 day occurs on the following date. Worked duration is shown in hours and minutes.</caption>
+                <thead><tr><th scope="col">Date</th><th scope="col">Status</th><th scope="col">Clock in</th><th scope="col">Clock out</th><th scope="col">Worked</th></tr></thead>
+                <tbody id="attendance-records"></tbody>
+            </table>
+        </div>
+        <footer class="attendance-dialog-footer">
+            <span id="attendance-demo-note">Synthetic attendance generated locally for this demo.</span>
+            <div class="attendance-dialog-actions"><button type="button" class="secondary-action" id="review-attendance" hidden>Mark attendance reviewed</button><button type="button" class="secondary-action" id="attendance-dialog-done">Done</button></div>
+        </footer>
+    </dialog>
 
-    </section>
-    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>    
-    <script src="distribution.js"></script>
-    <script src="script.js"></script>
-</body>
+        <script src="./src/data/defaults.js"></script>
+    <script src="./src/data/attendance.js"></script>
+    <script src="./src/distribution.js"></script>
+    <script src="./src/distribution-state.js"></script>
+    <script src="./src/services/storage.js"></script>
+    <script src="./src/services/distribution-api.js"></script>
+    <script src="./src/custom-select.js"></script>
+    <script src="./src/script.js"></script>
+    </body>
 </html>

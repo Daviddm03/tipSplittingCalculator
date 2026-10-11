@@ -1,6 +1,6 @@
 ﻿const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { parseMoneyToCents, formatCents, parseDaysWorked, validateParticipants, distributeTips } = require('../distribution.js');
+const { parseMoneyToCents, formatCents, parseDaysWorked, validateParticipants, distributeTips } = require('../src/distribution.js');
 const team = days => days.map((daysWorked, i) => ({ id: i + 1, name: String.fromCharCode(65 + i), outlet: 'Bar', daysWorked }));
 const amounts = result => result.payments.map(employee => employee.amountCents);
 
