@@ -92,6 +92,32 @@ function createDistributionRepository() {
         return data.employees.map(normalizeEmployee);
     }
 
+    async function loadEmployees() {
+        const data = await request("/employees");
+
+        if (!Array.isArray(data.employees)) {
+            throw new Error(
+                "The server returned invalid employee data."
+            );
+        }
+
+        return data.employees;
+    }
+
+    async function createEmployee(employee) {
+        return request("/employees", {
+            method: "POST",
+            body: JSON.stringify(employee)
+        });
+    }
+
+    async function updateEmployee(id, employee) {
+        return request("/employees/" + id, {
+            method: "PATCH",
+            body: JSON.stringify(employee)
+        });
+    }
+
     async function confirm(id, snapshot) {
         const body = {
             year: snapshot.periodYear,
@@ -163,6 +189,9 @@ function createDistributionRepository() {
 
     return {
         loadAttendance,
+        loadEmployees,
+        createEmployee,
+        updateEmployee,
         confirm,
         loadHistory,
         loadDistribution

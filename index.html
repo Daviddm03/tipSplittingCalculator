@@ -313,6 +313,81 @@
             </section>
 
             <section
+                class="employees-view"
+                id="employees-view"
+                hidden
+            >
+                <header class="employees-header">
+                    <div>
+                        <p class="eyebrow">Team management</p>
+                        <h1 id="employees-heading" tabindex="-1">Employees</h1>
+                        <p id="employees-count">Loading employees...</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="primary-action"
+                        id="add-employee"
+                    >
+                        Add employee
+                    </button>
+                </header>
+
+                <p
+                    class="employees-feedback"
+                    id="employees-feedback"
+                    role="status"
+                ></p>
+
+                <div class="employees-toolbar">
+                    <label class="employees-search">
+                        <span class="sr-only">Search employees</span>
+                        <input
+                            type="search"
+                            id="employees-search"
+                            placeholder="Search name, code or role"
+                            autocomplete="off"
+                        >
+                    </label>
+
+                    <label>
+                        <span class="sr-only">Filter by outlet</span>
+                        <select id="employees-outlet-filter">
+                            <option value="">All outlets</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span class="sr-only">Filter by status</span>
+                        <select id="employees-status-filter">
+                            <option value="">All statuses</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="employees-table-wrapper">
+                    <table class="employees-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Employee</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Outlet</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">
+                                    <span class="sr-only">Actions</span>
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="employees-rows"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section
                 class="placeholder-view"
                 id="placeholder-view"
                 hidden
@@ -363,7 +438,109 @@
         </footer>
     </dialog>
 
-        <script src="./src/data/defaults.js"></script>
+    <dialog
+        class="employee-dialog"
+        id="employee-dialog"
+        aria-labelledby="employee-dialog-title"
+    >
+        <form id="employee-form">
+            <header>
+                <div>
+                    <p class="eyebrow">Team management</p>
+                    <h2 id="employee-dialog-title">Add employee</h2>
+                </div>
+
+                <button
+                    type="button"
+                    class="dialog-close"
+                    id="close-employee-dialog"
+                    aria-label="Close employee form"
+                >
+                    <i class="icon icon-x" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <div class="employee-form-fields">
+                <label>
+                    <span>Employee code</span>
+                    <input
+                        type="text"
+                        id="employee-form-code"
+                        required
+                    >
+                </label>
+
+                <label>
+                    <span>Name</span>
+                    <input
+                        type="text"
+                        id="employee-form-name"
+                        required
+                    >
+                </label>
+
+                <label>
+                    <span>Email</span>
+                    <input
+                        type="email"
+                        id="employee-form-email"
+                    >
+                </label>
+
+                <label>
+                    <span>Role</span>
+                    <input
+                        type="text"
+                        id="employee-form-role"
+                        required
+                    >
+                </label>
+
+                <label>
+                    <span>Outlet</span>
+                    <select
+                        id="employee-form-outlet"
+                        required
+                    ></select>
+                </label>
+
+                <label class="employee-active-field">
+                    <input
+                        type="checkbox"
+                        id="employee-form-active"
+                        checked
+                    >
+                    <span>Active employee</span>
+                </label>
+            </div>
+
+            <p
+                class="workflow-error"
+                id="employee-form-error"
+                role="alert"
+            ></p>
+
+            <footer>
+                <button
+                    type="button"
+                    class="secondary-action"
+                    id="cancel-employee-form"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-action"
+                    id="save-employee"
+                >
+                    Add employee
+                </button>
+            </footer>
+        </form>
+    </dialog>
+
+    <script src="./src/data/defaults.js"></script>
     <script src="./src/data/attendance.js"></script>
     <script src="./src/distribution.js"></script>
     <script src="./src/distribution-state.js"></script>

@@ -1,9 +1,24 @@
 const state = {
-    employees: [], search: '', outlet: 'all', status: 'all', preview: null,
-    previewStale: false, confirmed: null, monthPickerYear: 2026,
-    attendanceEmployeeId: null, draftId: null, confirming: false, loadingAttendance: false,
-    history: [], historyLoaded: false, historyLoading: false,
-    historyDetail: null
+    employees: [], 
+    employeesLoaded: false,
+    employeesLoading: false,
+    search: '', 
+    outlet: 'all', 
+    status: 'all', 
+    preview: null,
+    previewStale: false, 
+    confirmed: null, 
+    monthPickerYear: 2026,
+    attendanceEmployeeId: null, 
+    draftId: null, 
+    confirming: false, 
+    loadingAttendance: false,
+    history: [], 
+    historyLoaded: false, 
+    historyLoading: false,
+    historyDetail: null,
+    editingEmployeeId: null,
+    savingEmployee: false,  
 };
 
 const elementIds = {
@@ -20,7 +35,8 @@ const elementIds = {
     previousYear: 'previous-year',
     nextYear: 'next-year',
     currentMonthButton: 'current-month-button',
-    tips: 'tips', tipsError: 'tips-error',
+    tips: 'tips', 
+    tipsError: 'tips-error',
     employeeRows: 'employee-rows',
     employeeSearch: 'employee-search',
     outletFilter: 'outlet-filter',
@@ -90,8 +106,33 @@ const elementIds = {
     historyDetailDifference: 'history-detail-difference',
     historyDetailMethod: 'history-detail-method',
     historyDetailSource: 'history-detail-source',
-    historyDetailRows: 'history-detail-rows'
+    historyDetailRows: 'history-detail-rows',
+    historyDetailSource: 'history-detail-source',
+    historyDetailRows: 'history-detail-rows',
+    employeesView: 'employees-view',
+    employeesHeading: 'employees-heading',
+    employeesCount: 'employees-count',
+    employeesFeedback: 'employees-feedback',
+    employeesSearch: 'employees-search',
+    employeesOutletFilter: 'employees-outlet-filter',
+    employeesStatusFilter: 'employees-status-filter',
+    employeesRows: 'employees-rows',
+    addEmployee: 'add-employee',
+    employeeDialog: 'employee-dialog',
+    employeeDialogTitle: 'employee-dialog-title',
+    employeeForm: 'employee-form',
+    employeeFormCode: 'employee-form-code',
+    employeeFormName: 'employee-form-name',
+    employeeFormEmail: 'employee-form-email',
+    employeeFormRole: 'employee-form-role',
+    employeeFormOutlet: 'employee-form-outlet',
+    employeeFormActive: 'employee-form-active',
+    employeeFormError: 'employee-form-error',
+    closeEmployeeDialog: 'close-employee-dialog',
+    cancelEmployeeForm: 'cancel-employee-form',
+    saveEmployee: 'save-employee',
 };
+
 const elements = Object.fromEntries(Object.entries(elementIds).map(([name, id]) => [name, document.getElementById(id)]));
 elements.recordReference = document.querySelector('.record-reference');
 elements.recordStatus = document.querySelector('.record-status');
@@ -945,6 +986,302 @@ function closeHistoryDistribution() {
     });
 }
 
+function getFilteredEmployees() {
+    const search = elements.employeesSearch.value
+        .trim()
+        .toLowerCase();
+
+    const outletId = elements.employeesOutletFilter.value;
+    const status = elements.employeesStatusFilter.value;
+
+    return state.employees.filter(employee => {
+        const matchesSearch =
+            !search ||
+            employee.name.toLowerCase().includes(search) ||
+            employee.employeeCode.toLowerCase().includes(search) ||
+            employee.role.toLowerCase().includes(search);
+
+        const matchesOutlet =
+            !outletId ||
+            String(employee.outletId) === outletId;
+
+        const matchesStatus =
+            !status ||
+            (status === 'active' && employee.active) ||
+            (status === 'inactive' && !employee.active);
+
+        return matchesSearch && matchesOutlet && matchesStatus;
+    });
+}
+
+function populateEmployeeOutletFilter() {
+    const outlets = [
+        ...new Map(
+            state.employees.map(employee => [
+                employee.outletId,
+                {
+                    id: employee.outletId,
+                    name: employee.outlet
+                }
+            ])
+        ).values()
+    ].sort((a, b) => a.name.localeCompare(b.name));
+
+    elements.employeesOutletFilter.innerHTML =
+        '<option value="">All outlets</option>';
+
+    outlets.forEach(outlet => {
+        const option = document.createElement('option');
+
+        option.value = String(outlet.id);
+        option.textContent = outlet.name;
+
+        elements.employeesOutletFilter.append(option);
+    });
+}
+
+function createEmployeeManagementRow(employee) {
+    const row = document.createElement('tr');
+
+    const employeeCell = document.createElement('td');
+
+    const name = document.createElement('strong');
+    name.textContent = employee.name;
+
+    const code = document.createElement('span');
+    code.textContent = employee.employeeCode;
+
+    employeeCell.append(name, code);
+
+    const roleCell = document.createElement('td');
+    roleCell.textContent = employee.role;
+
+    const outletCell = document.createElement('td');
+    outletCell.textContent = employee.outlet;
+
+    const emailCell = document.createElement('td');
+    emailCell.textContent = employee.email || '—';
+
+    const statusCell = document.createElement('td');
+    statusCell.textContent = employee.active
+        ? 'Active'
+        : 'Inactive';
+
+    const actionCell = document.createElement('td');
+
+    const editButton = document.createElement('button');
+    editButton.type = 'button';
+    editButton.className = 'employee-edit-button';
+    editButton.dataset.employeeId = String(employee.id);
+    editButton.textContent = 'Edit';
+
+    actionCell.append(editButton);
+
+    row.append(
+        employeeCell,
+        roleCell,
+        outletCell,
+        emailCell,
+        statusCell,
+        actionCell
+    );
+
+    return row;
+}
+
+function renderEmployees() {
+    elements.employeesRows.replaceChildren();
+
+    if (state.employeesLoading) {
+        elements.employeesCount.textContent =
+            'Loading employees...';
+
+        return;
+    }
+
+    if (!state.employeesLoaded) {
+        return;
+    }
+
+    const employees = getFilteredEmployees();
+
+    elements.employeesCount.textContent =
+        `${state.employees.length} employees`;
+
+    if (employees.length === 0) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+
+        cell.colSpan = 6;
+        cell.textContent = 'No employees match these filters.';
+
+        row.append(cell);
+        elements.employeesRows.append(row);
+
+        return;
+    }
+
+    employees.forEach(employee => {
+        elements.employeesRows.append(
+            createEmployeeManagementRow(employee)
+        );
+    });
+}
+
+async function loadEmployees() {
+    if (state.employeesLoading) {
+        return;
+    }
+
+    state.employeesLoading = true;
+    elements.employeesFeedback.textContent = '';
+    renderEmployees();
+
+    try {
+        state.employees = await repository.loadEmployees();
+        state.employeesLoaded = true;
+
+        populateEmployeeOutletFilter();
+    } catch (error) {
+        state.employees = [];
+        elements.employeesFeedback.textContent =
+            error.message || 'Failed to load employees.';
+    } finally {
+        state.employeesLoading = false;
+        renderEmployees();
+    }
+}
+
+function populateEmployeeFormOutlets() {
+    const outlets = [
+        ...new Map(
+            state.employees.map(employee => [
+                employee.outletId,
+                {
+                    id: employee.outletId,
+                    name: employee.outlet
+                }
+            ])
+        ).values()
+    ].sort((a, b) => a.name.localeCompare(b.name));
+
+    elements.employeeFormOutlet.replaceChildren();
+
+    outlets.forEach(outlet => {
+        const option = document.createElement('option');
+
+        option.value = String(outlet.id);
+        option.textContent = outlet.name;
+
+        elements.employeeFormOutlet.append(option);
+    });
+}
+
+function openEmployeeForm(employee = null) {
+    state.editingEmployeeId = employee?.id ?? null;
+
+    populateEmployeeFormOutlets();
+
+    elements.employeeDialogTitle.textContent =
+        employee ? 'Edit employee' : 'Add employee';
+
+    elements.saveEmployee.textContent =
+        employee ? 'Save changes' : 'Add employee';
+
+    elements.employeeFormCode.value =
+        employee?.employeeCode ?? '';
+
+    elements.employeeFormName.value =
+        employee?.name ?? '';
+
+    elements.employeeFormEmail.value =
+        employee?.email ?? '';
+
+    elements.employeeFormRole.value =
+        employee?.role ?? '';
+
+    elements.employeeFormOutlet.value =
+        employee ? String(employee.outletId) : '';
+
+    elements.employeeFormActive.checked =
+        employee?.active ?? true;
+
+    elements.employeeFormError.textContent = '';
+
+    elements.employeeDialog.showModal();
+
+    elements.employeeFormCode.focus();
+}
+
+function closeEmployeeForm() {
+    if (state.savingEmployee) {
+        return;
+    }
+
+    elements.employeeDialog.close();
+    elements.employeeForm.reset();
+    state.editingEmployeeId = null;
+}
+
+async function saveEmployee(event) {
+    event.preventDefault();
+
+    if (state.savingEmployee) {
+        return;
+    }
+
+    const employee = {
+        employeeCode: elements.employeeFormCode.value.trim(),
+        name: elements.employeeFormName.value.trim(),
+        email: elements.employeeFormEmail.value.trim() || null,
+        role: elements.employeeFormRole.value.trim(),
+        outletId: Number(elements.employeeFormOutlet.value),
+        active: elements.employeeFormActive.checked
+    };
+
+    state.savingEmployee = true;
+    elements.saveEmployee.disabled = true;
+    elements.employeeFormError.textContent = '';
+
+    try {
+        let savedEmployee;
+
+        if (state.editingEmployeeId === null) {
+            savedEmployee =
+                await repository.createEmployee(employee);
+
+            state.employees.push(savedEmployee);
+        } else {
+            savedEmployee =
+                await repository.updateEmployee(
+                    state.editingEmployeeId,
+                    employee
+                );
+
+            const index = state.employees.findIndex(
+                item => item.id === state.editingEmployeeId
+            );
+
+            if (index !== -1) {
+                state.employees[index] = savedEmployee;
+            }
+        }
+
+        populateEmployeeOutletFilter();
+        renderEmployees();
+
+        elements.employeeDialog.close();
+        elements.employeeForm.reset();
+        state.editingEmployeeId = null;
+    } catch (error) {
+        elements.employeeFormError.textContent =
+            error.message || 'Failed to save employee.';
+    } finally {
+        state.savingEmployee = false;
+        elements.saveEmployee.disabled = false;
+    }
+}
+
 function showView(view, focus = false) {
     if (!['distribution', 'employees', 'history', 'settings'].includes(view)) {
         view = 'distribution';
@@ -953,9 +1290,9 @@ function showView(view, focus = false) {
     closeOpenControls();
 
     elements.distributionView.hidden = view !== 'distribution';
+    elements.employeesView.hidden = view !== 'employees';
     elements.historyView.hidden = view !== 'history';
-    elements.placeholderView.hidden =
-        view === 'distribution' || view === 'history';
+    elements.placeholderView.hidden = view !== 'settings';
 
     if (view !== 'history') {
         state.historyDetail = null;
@@ -963,9 +1300,8 @@ function showView(view, focus = false) {
         elements.historyList.hidden = false;
     }
 
-    if (view === 'employees' || view === 'settings') {
-        elements.placeholderTitle.textContent =
-            view[0].toUpperCase() + view.slice(1);
+    if (view === 'settings') {
+        elements.placeholderTitle.textContent = 'Settings';
     }
 
     document
@@ -983,17 +1319,21 @@ function showView(view, focus = false) {
             }
         });
 
-    const title =
-        view === 'distribution'
-            ? 'Distribution'
-            : view === 'history'
-                ? 'History'
-                : elements.placeholderTitle.textContent;
+    const titles = {
+        distribution: 'Distribution',
+        employees: 'Employees',
+        history: 'History',
+        settings: 'Settings'
+    };
 
-    document.title = 'Tip Split — ' + title;
+    document.title = 'Tip Split — ' + titles[view];
 
     if (view === 'history' && !state.historyLoaded) {
         loadHistory();
+    }
+
+    if (view === 'employees' && !state.employeesLoaded) {
+        loadEmployees();
     }
 
     if (focus) {
@@ -1052,6 +1392,66 @@ function bindEvents() {
         elements.attendanceReviewNote.textContent = 'Attendance reviewed. Include this employee from the workspace when ready.';
         elements.attendanceDialogDone.focus(); render(); announce('Attendance reviewed for ' + employee.name + '.');
     });
+
+    elements.employeesSearch.addEventListener(
+        'input',
+        renderEmployees
+    );
+
+    elements.employeesOutletFilter.addEventListener(
+        'change',
+        renderEmployees
+    );
+
+    elements.employeesStatusFilter.addEventListener(
+        'change',
+        renderEmployees
+    );
+    
+    elements.addEmployee.addEventListener(
+        'click',
+        () => openEmployeeForm()
+    );
+
+    elements.employeesRows.addEventListener(
+        'click',
+        event => {
+            const button = event.target.closest(
+                '.employee-edit-button'
+            );
+
+            if (!button) {
+                return;
+            }
+
+            const employeeId = Number(
+                button.dataset.employeeId
+            );
+
+            const employee = state.employees.find(
+                item => item.id === employeeId
+            );
+
+            if (employee) {
+                openEmployeeForm(employee);
+            }
+        }
+    );
+
+    elements.closeEmployeeDialog.addEventListener(
+        'click',
+        closeEmployeeForm
+    );
+
+    elements.cancelEmployeeForm.addEventListener(
+        'click',
+        closeEmployeeForm
+    );
+
+    elements.employeeForm.addEventListener(
+        'submit',
+        saveEmployee
+    );
 }
 
 async function initialize() {
