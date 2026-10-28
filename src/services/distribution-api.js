@@ -1,5 +1,9 @@
 function createDistributionRepository() {
-    const API_BASE_URL = "http://localhost:3000/api";
+    const API_BASE_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:3000/api"
+        : "https://tipsplitapi.onrender.com/api";
 
     async function request(path, options = {}) {
         let response;
