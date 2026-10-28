@@ -1,40 +1,5 @@
-function normalizeEmployeeSearch(value) {
-    return String(value || '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim();
-}
-
-function filterEmployees(employees, filters) {
-    const search = normalizeEmployeeSearch(filters.search);
-
-    return employees.filter(employee => {
-        const searchable = normalizeEmployeeSearch([
-            employee.name,
-            employee.reference,
-            employee.role,
-            employee.outlet
-        ].join(' '));
-
-        const matchesSearch =
-            !search || searchable.includes(search);
-
-        const matchesOutlet =
-            filters.outlet === 'all' ||
-            employee.outlet === filters.outlet;
-
-        const matchesStatus =
-            filters.status === 'all' ||
-            (filters.status === 'included' && employee.included) ||
-            (filters.status === 'excluded' && !employee.included);
-
-        return matchesSearch && matchesOutlet && matchesStatus;
-    });
-}
-
 function summarizeWorkspace(employees, visibleEmployees, preview) {
-    const included = employees.filter(employee => employee.included);
+    const participants = employees.filter(employee => employee.daysWorked > 0);
 
     const payments = new Map(
         (preview?.payments || []).map(payment => [
@@ -45,12 +10,12 @@ function summarizeWorkspace(employees, visibleEmployees, preview) {
 
     return {
         employeeCount: employees.length,
-        includedCount: included.length,
-        includedDays: included.reduce(
+        participantCount: participants.length,
+        participantDays: participants.reduce(
             (total, employee) => total + employee.daysWorked,
             0
         ),
-        includedMinutes: included.reduce(
+        participantMinutes: participants.reduce(
             (total, employee) => total + employee.workedMinutes,
             0
         ),
@@ -68,50 +33,6 @@ function summarizeWorkspace(employees, visibleEmployees, preview) {
             0
         )
     };
-}
-
-function buildDistributionSnapshot(
-    preview,
-    employees,
-    periodYear,
-    periodMonth,
-    reference
-) {
-    const date = new Date(0);
-
-    date.setUTCFullYear(
-        periodYear,
-        periodMonth - 1,
-        1
-    );
-
-    return structuredClone({
-        ...preview,
-        period: new Intl.DateTimeFormat('en-IE', {
-            month: 'long',
-            year: 'numeric',
-            timeZone: 'UTC'
-        }).format(date),
-        periodYear,
-        periodMonth,
-        reference,
-        scope: 'hotel-wide',
-        attendanceSource: 'demo_hr',
-        attendanceSnapshot: employees.map(employee => ({
-            id: employee.id,
-            name: employee.name,
-            outlet: employee.outlet,
-            included: employee.included,
-            daysWorked: employee.daysWorked,
-            workedMinutes: employee.workedMinutes,
-            exclusionReason: employee.included
-                ? null
-                : employee.attentionReason ||
-                  'Excluded from this distribution',
-            attendanceReviewed: employee.attendanceReviewed,
-            attendance: employee.attendance
-        }))
-    });
 }
 
 function validateConfirmedDistribution(record) {
@@ -143,8 +64,12 @@ function validateConfirmedDistribution(record) {
             whole(payment.id) &&
             payment.id > 0 &&
             text(payment.name) &&
-            text(payment.outlet) &&
+            Array.isArray(payment.locations) &&
+            payment.locations.every(location => typeof location === 'string' ||
+                (location && typeof location.name === 'string')) &&
             whole(payment.daysWorked) &&
+            payment.daysWorked > 0 &&
+            whole(payment.workedMinutes) &&
             whole(payment.amountCents)
         ) &&
         new Set(
@@ -165,55 +90,6 @@ function validateConfirmedDistribution(record) {
         return 'The confirmed distribution response is invalid. Your review has been preserved; try again.';
     }
 
-    if (
-        record.attendanceSnapshot !== undefined &&
-        (
-            !Array.isArray(record.attendanceSnapshot) ||
-            !record.attendanceSnapshot.every(employee =>
-                employee &&
-                whole(employee.id) &&
-                employee.id > 0 &&
-                text(employee.name) &&
-                text(employee.outlet) &&
-                whole(employee.daysWorked) &&
-                whole(employee.workedMinutes) &&
-                typeof employee.included === 'boolean' &&
-                Array.isArray(employee.attendance) &&
-                employee.attendance.every(daily =>
-                    daily &&
-                    typeof daily.date === 'string' &&
-                    /^\d{4}-\d{2}-\d{2}$/.test(
-                        daily.date
-                    ) &&
-                    Number.isFinite(
-                        Date.parse(daily.date)
-                    ) &&
-                    [
-                        'worked',
-                        'day-off',
-                        'absence',
-                        'vacation'
-                    ].includes(daily.status) &&
-                    whole(daily.workedMinutes) &&
-                    (
-                        daily.clockIn === null ||
-                        typeof daily.clockIn ===
-                            'string'
-                    ) &&
-                    (
-                        daily.clockOut === null ||
-                        typeof daily.clockOut ===
-                            'string'
-                    ) &&
-                    typeof daily.clockOutNextDay ===
-                        'boolean'
-                )
-            )
-        )
-    ) {
-        return 'The confirmed attendance response is invalid. Your review has been preserved; try again.';
-    }
-
     return null;
 }
 
@@ -222,10 +98,7 @@ if (
     module.exports
 ) {
     module.exports = {
-        normalizeEmployeeSearch,
-        filterEmployees,
         summarizeWorkspace,
-        buildDistributionSnapshot,
         validateConfirmedDistribution
     };
 }

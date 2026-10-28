@@ -1,7 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const pool = require("./db/pool");
-const outletRoutes = require("./routes/outletRoutes");
+const locationRoutes = require("./routes/locationRoutes");
+const workspaceRoutes = require("./routes/workspaceRoutes");
+const apiErrorHandler = require("./middleware/apiErrorHandler");
 const employeeRoutes = require("./routes/employeeRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const distributionRoutes = require(
@@ -32,9 +34,11 @@ app.get("/api/health", async (req, res) => {
     }
 });
 
-app.use("/api/outlets", outletRoutes);
+app.use("/api/locations", locationRoutes);
+app.use("/api/workspace", workspaceRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/distributions", distributionRoutes);
+app.use(apiErrorHandler);
 
 module.exports = app;

@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -14,7 +13,7 @@
             content="Tip distribution management for hospitality operations."
         >
 
-        <title>Tip Split — Distribution</title>
+        <title data-i18n="a11y.brand">Tip Split — Distribution</title>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
 
@@ -25,7 +24,7 @@
         >
 
         <link
-            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap"
             rel="stylesheet"
         >
 
@@ -34,6 +33,7 @@
             href="https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/font/lucide.css"
         >
 
+        <script src="./src/theme.js"></script>
         <link
             rel="stylesheet"
             href="style.css"
@@ -41,482 +41,1324 @@
     </head>
 
     <body>
-        <a class="skip-link" href="#main-content">Skip to workspace</a>
-        <header class="app-header">
-        <div class="header-inner">
-            <div class="identity">
-                <a class="product-name" href="#distribution" data-view="distribution">Tip Split</a>
-                <span class="property-name">Tivoli Porto · Demo</span>
-            </div>
-            <nav class="main-navigation" aria-label="Main navigation">
-                <a class="active" href="#distribution" data-view="distribution" aria-current="page">Distribution</a>
-                <a href="#employees" data-view="employees">Employees</a>
-                <a href="#history" data-view="history">History</a>
-            </nav>
-            <a class="settings-button" href="#settings" data-view="settings" aria-label="Settings">
-                <i class="icon icon-settings" aria-hidden="true"></i><span>Settings</span>
-            </a>
-        </div>
-    </header>
+        <a class="skip-link" href="#main-content" data-i18n="a11y.skip">
+            Skip to workspace
+        </a>
 
-        <main class="main" id="main-content" tabindex="-1">
-            <section
-                class="distribution-view"
-                id="distribution-view"
-            >
-                <header class="page-header">
-                <div>
-                    <h1 id="distribution-heading" tabindex="-1">September distribution</h1>
-                    <div class="record-meta">
-                        <span class="record-reference">TS-DEMO-2026-09</span>
-                        <span class="meta-separator" aria-hidden="true">·</span>
-                        <span class="record-status">Draft</span>
-                    </div>
-                </div>
-                <a class="text-action" href="#history" data-view="history">View history <i class="icon icon-arrow-up-right" aria-hidden="true"></i></a>
-            </header>
-            <p class="storage-notice" id="storage-notice" role="alert" hidden></p>
-
-                <section class="setup" aria-label="Distribution inputs">
-                <div class="setup-field">
-                    <span class="field-label" id="period-label">Period</span>
-                    <div class="custom-control month-control" id="period-control">
-                        <button type="button" class="custom-control-trigger" id="period-trigger" aria-labelledby="period-label period-trigger-label" aria-expanded="false" aria-controls="period-menu">
-                            <span id="period-trigger-label">September 2026</span><i class="icon icon-chevron-down" aria-hidden="true"></i>
-                        </button>
-                        <div class="custom-menu month-menu" id="period-menu" role="group" aria-label="Choose distribution month" hidden>
-                            <div class="month-menu-header">
-                                <button type="button" class="month-navigation" id="previous-year" aria-label="Previous year"><i class="icon icon-chevron-left" aria-hidden="true"></i></button>
-                                <strong id="month-picker-year" aria-live="polite">2026</strong>
-                                <button type="button" class="month-navigation" id="next-year" aria-label="Next year"><i class="icon icon-chevron-right" aria-hidden="true"></i></button>
-                            </div>
-                            <div class="month-grid" id="month-grid"></div>
-                            <div class="month-menu-footer"><button type="button" id="current-month-button">Current month</button></div>
-                        </div>
-                        <input id="period" name="period" type="hidden" value="2026-09">
-                    </div>
-                </div>
-                <div class="setup-field">
-                    <label for="tips">Tip pool</label>
-                    <div class="currency-input"><span aria-hidden="true">€</span><input id="tips" name="tips" type="text" inputmode="decimal" value="8420.50" autocomplete="off" aria-describedby="tips-error"></div>
-                    <small id="tips-error" role="alert"></small>
-                </div>
-                <div class="setup-context">
-                    <div><span>Scope</span><strong>Hotel-wide pool</strong></div>
-                    <div><span>Allocation</span><strong>Worked days</strong></div>
-                </div>
-            </section>
-
-                <section class="attendance-line" aria-label="Demo attendance provenance">
-                <div class="attendance-information">
-                    <i class="icon icon-database" aria-hidden="true"></i>
-                    <div><strong id="attendance-coverage">September attendance</strong><span id="attendance-source">Synthetic attendance · Generated locally</span></div>
-                </div>
-                <div class="attendance-exception">
-                    <span id="attendance-attention-count"></span>
-                    <button type="button" id="attendance-details-button">View details</button>
-                </div>
-            </section>
-
-                <section class="employees-workspace" aria-labelledby="employees-heading">
-                <header class="employees-heading">
-                    <div>
-                        <div class="heading-line"><h2 id="employees-heading">Employees</h2><span id="included-count"></span></div>
-                        <p>Filters change the view, not the hotel-wide pool. Hours are attendance evidence only.</p>
-                    </div>
-                    <button type="button" class="bulk-action" id="include-visible-button">Include visible</button>
-                </header>
-                <div class="employee-toolbar">
-                    <label class="search-control">
-                        <span class="sr-only">Search employees by name, ID, role or outlet</span><i class="icon icon-search" aria-hidden="true"></i>
-                        <input id="employee-search" name="search" type="search" placeholder="Search name, ID, role or outlet" autocomplete="off">
-                    </label>
-                    <div class="filter-control"><span class="field-label" id="outlet-label">Outlet</span><div class="custom-control"><button type="button" class="custom-control-trigger" id="outlet-filter" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="outlet-menu" aria-labelledby="outlet-label outlet-trigger-label"><span id="outlet-trigger-label">All outlets</span><i class="icon icon-chevron-down" aria-hidden="true"></i></button><div class="custom-menu select-menu" id="outlet-menu" role="listbox" aria-labelledby="outlet-label" hidden></div></div></div>
-                    <div class="filter-control"><span class="field-label" id="status-label">Status</span><div class="custom-control"><button type="button" class="custom-control-trigger" id="status-filter" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="status-menu" aria-labelledby="status-label status-trigger-label"><span id="status-trigger-label">All employees</span><i class="icon icon-chevron-down" aria-hidden="true"></i></button><div class="custom-menu select-menu" id="status-menu" role="listbox" aria-labelledby="status-label" hidden></div></div></div>
-                </div>
-                <div class="table-container" tabindex="0" role="region" aria-label="Employee attendance and payouts; scroll horizontally on smaller screens">
-                    <table class="employee-table">
-                        <caption class="sr-only">Attendance for visible employees. Payouts use included worked days only.</caption>
-                        <colgroup><col class="include-column"><col class="employee-column"><col class="outlet-column"><col class="days-column"><col class="hours-column"><col class="payout-column"></colgroup>
-                        <thead><tr><th scope="col"><span class="sr-only">Include</span></th><th scope="col">Employee</th><th scope="col">Outlet</th><th scope="col" class="numeric-column">Days</th><th scope="col" class="numeric-column">Hours</th><th scope="col" class="numeric-column">Payout</th></tr></thead>
-                        <tbody id="employee-rows"></tbody>
-                        <tfoot><tr><th scope="row" colspan="3"><span id="visible-count"></span></th><td class="numeric-cell" id="footer-days">—</td><td class="numeric-cell" id="footer-hours">—</td><td class="numeric-cell" id="footer-payout">—</td></tr></tfoot>
-                    </table>
-                </div>
-                <div class="table-note"><span id="table-note-employees"></span><span id="table-note-days"></span></div>
-                <p class="workflow-error" id="workflow-error" role="alert"></p>
-                <p class="workflow-notice" id="workflow-notice" role="status"></p>
-                <div class="action-bar">
-                    <div class="action-summary"><div>Included <strong id="action-employees"></strong></div><div>Eligible days <strong id="action-days"></strong></div></div>
-                    <div class="reconciliation" id="reconciliation" aria-label="Distribution reconciliation">
-                        <div class="reconciliation-item"><span>Pool</span><strong id="summary-tips">—</strong></div>
-                        <div class="reconciliation-item" id="allocated-summary" hidden><span>Allocated</span><strong id="summary-allocated">—</strong></div>
-                        <div class="reconciliation-item" id="difference-summary" hidden><span>Difference</span><strong id="summary-difference">—</strong></div>
-                        <div class="preview-status" id="preview-status" hidden><strong>Recalculation required</strong></div>
-                    </div>
-                    <button type="button" class="primary-action" id="calculate-button">Calculate payouts <i class="icon icon-arrow-right" aria-hidden="true"></i></button>
-                </div>
-                <p class="sr-only" id="workspace-status" role="status" aria-atomic="true"></p>
-            </section>
-        </section>
-
-        <section
-                class="history-view"
-                id="history-view"
-                hidden
-            >
-                <header class="page-header">
-                    <div>
-                        <h1 id="history-heading" tabindex="-1">
-                            Distribution history
-                        </h1>
-
-                        <div class="record-meta">
-                            <span id="history-count">
-                                Past confirmed distributions
-                            </span>
-                        </div>
-                    </div>
-                </header>
-
-                <div
-                    class="history-feedback"
-                    id="history-feedback"
-                    role="status"
-                ></div>
-
-                <section
-                    class="history-list"
-                    id="history-list"
-                    aria-labelledby="history-heading"
-                >
-                    <div
-                        class="history-table-container"
-                        tabindex="0"
-                        role="region"
-                        aria-label="Confirmed distribution history"
+        <div class="app-shell">
+            <aside class="sidebar">
+                <div class="sidebar-top">
+                    <a
+                        class="brand-mark"
+                        href="#distribution"
+                        data-view="distribution"
+                        aria-label="Tip Split — Distribution"
+                        data-i18n-aria-label="a11y.brand"
                     >
-                        <table class="history-table">
-                            <caption class="sr-only">
-                                Confirmed tip distributions
-                            </caption>
+                        <img
+                            class="brand-logo"
+                            src="./assets/Tip_Split_Mark.png"
+                            alt=""
+                        >
+                    </a>
 
-                            <thead>
-                                <tr>
-                                    <th scope="col">Reference</th>
-                                    <th scope="col">Period</th>
-                                    <th scope="col">Employees</th>
-                                    <th scope="col">Pool</th>
-                                    <th scope="col">Confirmed</th>
-                                    <th scope="col">
-                                        <span class="sr-only">Open</span>
-                                    </th>
-                                </tr>
-                            </thead>
+                    <div class="sidebar-divider"></div>
 
-                            <tbody id="history-rows"></tbody>
-                        </table>
+                    <nav
+                        class="main-navigation"
+                        aria-label="Main navigation"
+                        data-i18n-aria-label="a11y.navigation"
+                    >
+                        <a
+                            class="active"
+                            href="#distribution"
+                            data-view="distribution"
+                            aria-current="page"
+                        >
+                            <i
+                                class="icon icon-calculator"
+                                aria-hidden="true"
+                            ></i>
+                            <span data-i18n="nav.distribution">Distribution</span>
+                        </a>
+
+                        <a
+                            href="#employees"
+                            data-view="employees"
+                        >
+                            <i
+                                class="icon icon-users"
+                                aria-hidden="true"
+                            ></i>
+                            <span data-i18n="nav.employees">Employees</span>
+                        </a>
+
+                        <a
+                            href="#history"
+                            data-view="history"
+                        >
+                            <i
+                                class="icon icon-history"
+                                aria-hidden="true"
+                            ></i>
+                            <span data-i18n="nav.history">History</span>
+                        </a>
+
+                        <a
+                            href="#settings"
+                            data-view="settings"
+                        >
+                            <i
+                                class="icon icon-settings"
+                                aria-hidden="true"
+                            ></i>
+                            <span data-i18n="nav.settings">Settings</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <div class="sidebar-bottom">
+                    <div class="sidebar-divider"></div>
+
+                    <div class="sidebar-profile">
+                        <div
+                            class="sidebar-avatar"
+                            aria-hidden="true"
+                        >
+                            DM
+                        </div>
+
+                        <div class="sidebar-profile-info">
+                            <strong>David Montaño</strong>
+                            <span id="sidebar-workspace-name"></span>
+                        </div>
                     </div>
-                </section>
 
-                <section
-                    class="history-detail"
-                    id="history-detail"
-                    aria-labelledby="history-detail-heading"
-                    hidden
-                >
                     <button
+                        class="sidebar-logout"
                         type="button"
-                        class="history-back"
-                        id="history-back"
+                        aria-label="Log out"
+                        data-i18n-aria-label="nav.logout"
                     >
                         <i
-                            class="icon icon-arrow-left"
+                            class="icon icon-log-out"
                             aria-hidden="true"
                         ></i>
-                        All distributions
+
+                        <span data-i18n="nav.logout">Log out</span>
                     </button>
+                </div>
+            </aside>
 
-                    <header class="history-detail-header">
-                        <div>
-                            <h2 id="history-detail-heading">
-                                Distribution
-                            </h2>
+            <main
+                class="main"
+                id="main-content"
+                tabindex="-1"
+            >
+                <section
+                    class="distribution-view"
+                    id="distribution-view"
+                >
+                    <header class="distribution-header">
+                        <div class="distribution-title">
+                            <p class="eyebrow" data-i18n="nav.distribution">Distribution</p>
 
-                            <span
-                                class="record-reference"
-                                id="history-detail-reference"
-                            ></span>
+                            <h1
+                                id="distribution-heading"
+                                tabindex="-1"
+                            >
+                                September 2026
+                            </h1>
+
+                            <div class="record-meta">
+                                <span class="record-reference">
+                                    TS-DEMO-2026-09
+                                </span>
+
+                                <span
+                                    class="meta-separator"
+                                    aria-hidden="true"
+                                >
+                                    ·
+                                </span>
+
+                                <span class="record-status" data-i18n="distribution.draft">
+                                    Draft
+                                </span>
+                            </div>
                         </div>
 
-                        <strong id="history-detail-pool">—</strong>
+                        <a
+                            class="text-action"
+                            href="#history"
+                            data-view="history"
+                        ><span data-i18n="distribution.viewHistory">View history</span><i
+                                class="icon icon-arrow-up-right"
+                                aria-hidden="true"
+                            ></i>
+                        </a>
                     </header>
 
-                    <dl class="history-summary">
-                        <div>
-                            <dt>Period</dt>
-                            <dd id="history-detail-period">—</dd>
+                    <p
+                        class="storage-notice"
+                        id="storage-notice"
+                        role="alert"
+                        hidden
+                    ></p>
+
+                    <section
+                        class="distribution-setup"
+                        aria-label="Distribution inputs"
+                        data-i18n-aria-label="a11y.distributionInputs"
+                    >
+                        <div class="setup-field">
+                            <span
+                                class="field-label"
+                                id="period-label"
+                                data-i18n="fields.period"
+                            >
+                                Period
+                            </span>
+
+                            <div
+                                class="custom-control month-control"
+                                id="period-control"
+                            >
+                                <button
+                                    type="button"
+                                    class="custom-control-trigger"
+                                    id="period-trigger"
+                                    aria-labelledby="period-label period-trigger-label"
+                                    aria-expanded="false"
+                                    aria-controls="period-menu"
+                                >
+                                    <span id="period-trigger-label">
+                                        September 2026
+                                    </span>
+
+                                    <i
+                                        class="icon icon-chevron-down"
+                                        aria-hidden="true"
+                                    ></i>
+                                </button>
+
+                                <div
+                                    class="custom-menu month-menu"
+                                    id="period-menu"
+                                    role="group"
+                                    aria-label="Choose distribution month"
+                                    hidden
+                                    data-i18n-aria-label="a11y.chooseMonth"
+                                >
+                                    <div class="month-menu-header">
+                                        <button
+                                            type="button"
+                                            class="month-navigation"
+                                            id="previous-year"
+                                            aria-label="Previous year"
+                                            data-i18n-aria-label="a11y.previousYear"
+                                        >
+                                            <i
+                                                class="icon icon-chevron-left"
+                                                aria-hidden="true"
+                                            ></i>
+                                        </button>
+
+                                        <strong
+                                            id="month-picker-year"
+                                            aria-live="polite"
+                                        >
+                                            2026
+                                        </strong>
+
+                                        <button
+                                            type="button"
+                                            class="month-navigation"
+                                            id="next-year"
+                                            aria-label="Next year"
+                                            data-i18n-aria-label="a11y.nextYear"
+                                        >
+                                            <i
+                                                class="icon icon-chevron-right"
+                                                aria-hidden="true"
+                                            ></i>
+                                        </button>
+                                    </div>
+
+                                    <div
+                                        class="month-grid"
+                                        id="month-grid"
+                                    ></div>
+
+                                    <div class="month-menu-footer">
+                                        <button
+                                            type="button"
+                                            id="current-month-button"
+                                            data-i18n="distribution.currentMonth"
+                                        >
+                                            Current month
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <input
+                                    id="period"
+                                    name="period"
+                                    type="hidden"
+                                    value=""
+                                >
+                            </div>
                         </div>
 
-                        <div>
-                            <dt>Employees</dt>
-                            <dd id="history-detail-employees">—</dd>
+                        <div class="setup-field tip-pool-field">
+                            <label for="tips" data-i18n="fields.tipPool">
+                                Tip pool
+                            </label>
+
+                            <div class="currency-input">
+                                <span aria-hidden="true">€</span>
+
+                                <input
+                                    id="tips"
+                                    name="tips"
+                                    type="text"
+                                    inputmode="decimal"
+                                    value="8420.50"
+                                    autocomplete="off"
+                                    aria-describedby="tips-error"
+                                >
+                            </div>
+
+                            <small
+                                id="tips-error"
+                                role="alert"
+                            ></small>
                         </div>
 
-                        <div>
-                            <dt>Allocated</dt>
-                            <dd id="history-detail-allocated">—</dd>
+                        <div class="distribution-method">
+                            <span data-i18n="fields.distributionMethod">Distribution method</span>
+                            <strong data-i18n="common.workedDays">Worked days</strong>
+                        </div>
+                    </section>
+
+                    <section
+                        class="attendance-line"
+                        aria-label="Attendance provenance"
+                        data-i18n-aria-label="a11y.attendanceProvenance"
+                    >
+                        <div class="attendance-information">
+                            <i
+                                class="icon icon-database"
+                                aria-hidden="true"
+                            ></i>
+
+                            <div>
+                                <span class="attendance-label" data-i18n="fields.attendance">
+                                    Attendance
+                                </span>
+
+                                <div class="attendance-meta">
+                                    <strong id="attendance-coverage">
+                                        01–30 Sep 2026
+                                    </strong>
+
+                                    <span aria-hidden="true">·</span>
+
+                                    <span id="attendance-source" data-i18n="attendance.source">
+                                        Demo HR attendance · PostgreSQL
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <dt>Difference</dt>
-                            <dd id="history-detail-difference">—</dd>
+                    </section>
+
+                    <section
+                        class="employees-workspace"
+                        aria-labelledby="distribution-employees-heading"
+                    >
+                        <header class="employees-heading">
+                            <div class="employees-title-line">
+                                <h2 id="distribution-employees-heading" data-i18n="nav.employees">
+                                    Employees
+                                </h2>
+
+                                <span id="included-count"></span>
+                            </div>
+
+                        </header>
+
+                        <div class="employee-toolbar">
+                            <label class="search-control">
+                                <span class="sr-only" data-i18n="employees.searchHelp">
+                                    Search employees by name, ID, role or location
+                                </span>
+
+                                <i
+                                    class="icon icon-search"
+                                    aria-hidden="true"
+                                ></i>
+
+                                <input
+                                    id="employee-search"
+                                    name="search"
+                                    type="search"
+                                    placeholder="Search employees"
+                                    autocomplete="off"
+                                    data-i18n-placeholder="employees.search"
+                                >
+                            </label>
+
+                            <div class="filter-control" data-location-ui>
+                                <span
+                                    class="field-label"
+                                    id="location-label"
+                                    data-i18n="fields.location"
+                                >
+                                    Location
+                                </span>
+
+                                <div class="custom-control">
+                                    <button
+                                        type="button"
+                                        class="custom-control-trigger"
+                                        id="location-filter"
+                                        role="combobox"
+                                        aria-haspopup="listbox"
+                                        aria-expanded="false"
+                                        aria-controls="location-menu"
+                                        aria-labelledby="location-label location-trigger-label"
+                                    >
+                                        <span id="location-trigger-label" data-i18n="common.allLocations">
+                                            All locations
+                                        </span>
+
+                                        <i
+                                            class="icon icon-chevron-down"
+                                            aria-hidden="true"
+                                        ></i>
+                                    </button>
+
+                                    <div
+                                        class="custom-menu select-menu"
+                                        id="location-menu"
+                                        role="listbox"
+                                        aria-labelledby="location-label"
+                                        hidden
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <div class="filter-control">
+                                <span
+                                    class="field-label"
+                                    id="status-label"
+                                    data-i18n="fields.status"
+                                >
+                                    Status
+                                </span>
+
+                                <div class="custom-control">
+                                    <button
+                                        type="button"
+                                        class="custom-control-trigger"
+                                        id="status-filter"
+                                        role="combobox"
+                                        aria-haspopup="listbox"
+                                        aria-expanded="false"
+                                        aria-controls="status-menu"
+                                        aria-labelledby="status-label status-trigger-label"
+                                    >
+                                        <span id="status-trigger-label" data-i18n="common.allEmployees">
+                                            All employees
+                                        </span>
+
+                                        <i
+                                            class="icon icon-chevron-down"
+                                            aria-hidden="true"
+                                        ></i>
+                                    </button>
+
+                                    <div
+                                        class="custom-menu select-menu"
+                                        id="status-menu"
+                                        role="listbox"
+                                        aria-labelledby="status-label"
+                                        hidden
+                                    ></div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <dt>Allocation</dt>
-                            <dd id="history-detail-method">—</dd>
+                        <div
+                            class="table-container"
+                            tabindex="0"
+                            role="region"
+                            aria-label="Employee attendance and payouts"
+                            data-i18n-aria-label="a11y.employeePayouts"
+                        >
+                            <table class="employee-table">
+                                <caption class="sr-only" data-i18n="distribution.tableCaption">
+                                    Attendance for visible employees.
+                                    Participation is automatic from worked days.
+                                </caption>
+
+                                <colgroup>
+                                    <col class="employee-column">
+                                    <col class="location-column">
+                                    <col class="days-column">
+                                    <col class="hours-column">
+                                    <col class="payout-column">
+                                </colgroup>
+
+                                <thead>
+                                    <tr>
+                                        <th scope="col" data-i18n="fields.employee">
+                                            Employee
+                                        </th>
+
+                                        <th scope="col" data-i18n="fields.location">
+                                            Location
+                                        </th>
+
+                                        <th
+                                            scope="col"
+                                            class="numeric-column"
+                                            data-i18n="fields.days"
+                                        >
+                                            Days
+                                        </th>
+
+                                        <th
+                                            scope="col"
+                                            class="numeric-column"
+                                            data-i18n="fields.hours"
+                                        >
+                                            Hours
+                                        </th>
+
+                                        <th
+                                            scope="col"
+                                            class="numeric-column"
+                                            data-i18n="fields.payout"
+                                        >
+                                            Payout
+                                        </th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="employee-rows"></tbody>
+
+                                <tfoot>
+                                    <tr>
+                                        <th
+                                            scope="row"
+                                            colspan="2"
+                                        >
+                                            <span id="visible-count"></span>
+                                        </th>
+
+                                        <td
+                                            class="numeric-cell"
+                                            id="footer-days"
+                                        >
+                                            —
+                                        </td>
+
+                                        <td
+                                            class="numeric-cell"
+                                            id="footer-hours"
+                                        >
+                                            —
+                                        </td>
+
+                                        <td
+                                            class="numeric-cell"
+                                            id="footer-payout"
+                                        >
+                                            —
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
 
-                        <div>
-                            <dt>Attendance source</dt>
-                            <dd id="history-detail-source">—</dd>
+                        <div class="table-note">
+                            <span id="table-note-employees"></span>
+                            <span id="table-note-days"></span>
                         </div>
-                    </dl>
+
+                        <p
+                            class="workflow-error"
+                            id="workflow-error"
+                            role="alert"
+                        ></p>
+
+                        <p id="attendance-state" class="workflow-notice" role="status"></p>
+                        <button id="attendance-retry" type="button" class="text-action" data-i18n="common.retry" hidden>Retry</button>
+
+                        <p
+                            class="workflow-notice"
+                            id="workflow-notice"
+                            role="status"
+                        ></p>
+
+                        <div class="action-bar">
+                            <div class="action-summary">
+                                <div>
+                                    <span data-i18n="nav.employees">Employees</span>
+                                    <strong id="action-employees"></strong>
+                                </div>
+
+                                <div>
+                                    <span data-i18n="common.workedDays">Worked days</span>
+                                    <strong id="action-days"></strong>
+                                </div>
+                            </div>
+
+                            <div
+                                class="reconciliation"
+                                id="reconciliation"
+                                aria-label="Distribution reconciliation"
+                                data-i18n-aria-label="a11y.reconciliation"
+                            >
+                                <div class="reconciliation-item">
+                                    <span data-i18n="fields.tipPool">Tip pool</span>
+                                    <strong id="summary-tips">—</strong>
+                                </div>
+
+                                <div
+                                    class="reconciliation-item"
+                                    id="allocated-summary"
+                                    hidden
+                                >
+                                    <span data-i18n="fields.allocated">Allocated</span>
+                                    <strong id="summary-allocated">—</strong>
+                                </div>
+
+                                <div
+                                    class="reconciliation-item"
+                                    id="difference-summary"
+                                    hidden
+                                >
+                                    <span data-i18n="fields.difference">Difference</span>
+                                    <strong id="summary-difference">—</strong>
+                                </div>
+
+                                <div
+                                    class="preview-status"
+                                    id="preview-status"
+                                    hidden
+                                >
+                                    <strong data-i18n="distribution.recalculationRequired">
+                                        Recalculation required
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                class="primary-action"
+                                id="calculate-button"
+                            ><span data-i18n="distribution.calculate">Calculate payouts</span><i
+                                    class="icon icon-arrow-right"
+                                    aria-hidden="true"
+                                ></i>
+                            </button>
+                        </div>
+
+                        <p
+                            class="sr-only"
+                            id="workspace-status"
+                            role="status"
+                            aria-atomic="true"
+                        ></p>
+                    </section>
+                </section>
+
+                <section
+                    class="employees-view"
+                    id="employees-view"
+                    hidden
+                >
+                    <header class="employees-page-header">
+                        <div class="employees-page-title">
+                            <p class="eyebrow" data-i18n="employees.team">
+                                Team
+                            </p>
+
+                            <h1
+                                id="employees-heading"
+                                tabindex="-1"
+                                data-i18n="nav.employees"
+                            >
+                                Employees
+                            </h1>
+
+                            <p class="employees-description" data-i18n="employees.description">
+                                Manage employees and their distribution details.
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="employees-add-button"
+                            id="add-employee"
+                        >
+                            <span data-i18n="employees.add">Add employee</span>
+
+                            <i
+                                class="icon icon-plus"
+                                aria-hidden="true"
+                            ></i>
+                        </button>
+                    </header>
+
+                    <div class="employees-summary">
+                        <span id="employees-count" data-i18n="employees.loading">
+                            Loading employees...
+                        </span>
+                    </div>
+
+                    <p
+                        class="employees-feedback"
+                        id="employees-feedback"
+                        role="status"
+                    ></p>
+
+                    <section
+                        class="employees-directory"
+                        aria-label="Employee directory"
+                        data-i18n-aria-label="a11y.employeeDirectory"
+                    >
+                        <div class="employees-toolbar">
+                            <label class="employees-search">
+                                <span class="sr-only" data-i18n="employees.search">
+                                    Search employees
+                                </span>
+
+                                <i
+                                    class="icon icon-search"
+                                    aria-hidden="true"
+                                ></i>
+
+                                <input
+                                    type="search"
+                                    id="employees-search"
+                                    placeholder="Search employees"
+                                    autocomplete="off"
+                                    data-i18n-placeholder="employees.search"
+                                >
+                            </label>
+
+                            <div class="employees-filter" data-location-ui>
+                                <span
+                                    class="sr-only"
+                                    id="employees-location-label"
+                                    data-i18n="employees.filterLocation"
+                                >
+                                    Filter by location
+                                </span>
+
+                                <div class="custom-control">
+                                    <button
+                                        type="button"
+                                        class="custom-control-trigger"
+                                        id="employees-location-filter"
+                                        role="combobox"
+                                        aria-haspopup="listbox"
+                                        aria-expanded="false"
+                                        aria-controls="employees-location-menu"
+                                        aria-labelledby="employees-location-label employees-location-trigger-label"
+                                    >
+                                        <span id="employees-location-trigger-label" data-i18n="common.allLocations">
+                                            All locations
+                                        </span>
+
+                                        <i
+                                            class="icon icon-chevron-down"
+                                            aria-hidden="true"
+                                        ></i>
+                                    </button>
+
+                                    <div
+                                        class="custom-menu select-menu"
+                                        id="employees-location-menu"
+                                        role="listbox"
+                                        aria-labelledby="employees-location-label"
+                                        hidden
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <div class="employees-filter">
+                                <span
+                                    class="sr-only"
+                                    id="employees-status-label"
+                                    data-i18n="employees.filterStatus"
+                                >
+                                    Filter by status
+                                </span>
+
+                                <div class="custom-control">
+                                    <button
+                                        type="button"
+                                        class="custom-control-trigger"
+                                        id="employees-status-filter"
+                                        role="combobox"
+                                        aria-haspopup="listbox"
+                                        aria-expanded="false"
+                                        aria-controls="employees-status-menu"
+                                        aria-labelledby="employees-status-label employees-status-trigger-label"
+                                    >
+                                        <span id="employees-status-trigger-label" data-i18n="common.allEmployees">
+                                            All employees
+                                        </span>
+
+                                        <i
+                                            class="icon icon-chevron-down"
+                                            aria-hidden="true"
+                                        ></i>
+                                    </button>
+
+                                    <div
+                                        class="custom-menu select-menu"
+                                        id="employees-status-menu"
+                                        role="listbox"
+                                        aria-labelledby="employees-status-label"
+                                        hidden
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="employees-table-wrapper"
+                            tabindex="0"
+                            role="region"
+                            aria-label="Employees"
+                            data-i18n-aria-label="nav.employees"
+                        >
+                            <table class="employees-table">
+                                <colgroup>
+                                    <col class="employees-code-column">
+                                    <col class="employees-name-column">
+                                    <col class="employees-role-column">
+                                    <col class="employees-locations-column">
+                                    <col class="employees-email-column">
+                                    <col class="employees-status-column">
+                                    <col class="employees-actions-column">
+                                </colgroup>
+
+                                <thead>
+                                    <tr>
+                                        <th scope="col" data-i18n="fields.code">
+                                            Code
+                                        </th>
+
+                                        <th scope="col" data-i18n="fields.employee">
+                                            Employee
+                                        </th>
+
+                                        <th scope="col" data-i18n="fields.role">
+                                            Role
+                                        </th>
+
+                                        <th scope="col" data-i18n="fields.locations">
+                                            Locations
+                                        </th>
+
+                                        <th scope="col" data-i18n="fields.email">
+                                            Email
+                                        </th>
+
+                                        <th scope="col" data-i18n="fields.status">
+                                            Status
+                                        </th>
+
+                                        <th scope="col">
+                                            <span class="sr-only" data-i18n="fields.actions">
+                                                Actions
+                                            </span>
+                                        </th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="employees-rows"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </section>
+
+                <section
+                    class="history-view"
+                    id="history-view"
+                    hidden
+                >
+                    <header class="history-page-header" id="history-page-header">
+                        <div class="history-page-title">
+                            <p class="eyebrow" data-i18n="history.auditTrail">
+                                Audit trail
+                            </p>
+
+                            <h1
+                                id="history-heading"
+                                tabindex="-1"
+                                data-i18n="history.heading"
+                            >
+                                Distribution history
+                            </h1>
+
+                            <p class="history-description" data-i18n="history.description">
+                                Review confirmed tip distributions and their final allocations.
+                            </p>
+                        </div>
+                    </header>
+
+                    <div class="history-summary-line" id="history-summary-line">
+                        <span id="history-count" data-i18n="history.past">
+                            Past confirmed distributions
+                        </span>
+                    </div>
 
                     <div
-                        class="history-table-container history-items-container"
-                        tabindex="0"
-                        role="region"
-                        aria-label="Distribution employee payouts"
+                        class="history-feedback"
+                        id="history-feedback"
+                        role="status"
+                    ></div>
+
+                    <section
+                        class="history-list"
+                        id="history-list"
+                        aria-labelledby="history-heading"
                     >
-                        <table class="history-table history-items-table">
-                            <caption class="sr-only">
-                                Employee payouts for this distribution
-                            </caption>
-
-                            <thead>
-                                <tr>
-                                    <th scope="col">Employee</th>
-                                    <th scope="col">Outlet</th>
-                                    <th scope="col">Role</th>
-                                    <th scope="col">Days</th>
-                                    <th scope="col">Hours</th>
-                                    <th scope="col">Payout</th>
-                                </tr>
-                            </thead>
-
-                            <tbody id="history-detail-rows"></tbody>
-                        </table>
-                    </div>
-                </section>
-            </section>
-
-            <section
-                class="employees-view"
-                id="employees-view"
-                hidden
-            >
-                <header class="employees-header">
-                    <div>
-                        <p class="eyebrow">Team management</p>
-                        <h1 id="employees-heading" tabindex="-1">Employees</h1>
-                        <p id="employees-count">Loading employees...</p>
-                    </div>
-
-                    <button
-                        type="button"
-                        class="primary-action"
-                        id="add-employee"
-                    >
-                        Add employee
-                    </button>
-                </header>
-
-                <p
-                    class="employees-feedback"
-                    id="employees-feedback"
-                    role="status"
-                ></p>
-
-                <div class="employees-toolbar">
-                    <label class="employees-search">
-                        <span class="sr-only">Search employees</span>
-                        <input
-                            type="search"
-                            id="employees-search"
-                            placeholder="Search name, code or role"
-                            autocomplete="off"
+                        <div
+                            class="history-table-container"
+                            tabindex="0"
+                            role="region"
+                            aria-label="Confirmed distribution history"
+                            data-i18n-aria-label="a11y.history"
                         >
-                    </label>
+                            <table class="history-table">
+                                <caption class="sr-only" data-i18n="history.caption">
+                                    Confirmed tip distributions
+                                </caption>
 
-                    <label>
-                        <span class="sr-only">Filter by outlet</span>
-                        <select id="employees-outlet-filter">
-                            <option value="">All outlets</option>
-                        </select>
-                    </label>
+                                <colgroup>
+                                    <col class="history-col-reference">
+                                    <col class="history-col-period">
+                                    <col class="history-col-employees">
+                                    <col class="history-col-money">
+                                    <col class="history-col-money">
+                                    <col class="history-col-difference">
+                                    <col class="history-col-confirmed">
+                                    <col class="history-col-action">
+                                </colgroup>
 
-                    <label>
-                        <span class="sr-only">Filter by status</span>
-                        <select id="employees-status-filter">
-                            <option value="">All statuses</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </label>
-                </div>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" data-i18n="fields.reference">Reference</th>
+                                        <th scope="col" data-i18n="fields.period">Period</th>
+                                        <th scope="col" data-i18n="nav.employees">Employees</th>
+                                        <th scope="col" data-i18n="fields.totalTips">Total tips</th>
+                                        <th scope="col" data-i18n="fields.allocated">Allocated</th>
+                                        <th scope="col" data-i18n="fields.difference">Difference</th>
+                                        <th scope="col" data-i18n="common.confirmed">Confirmed</th>
 
-                <div class="employees-table-wrapper">
-                    <table class="employees-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Employee</th>
-                                <th scope="col">Role</th>
-                                <th scope="col">Outlet</th>
-                                <th scope="col">Email</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">
-                                    <span class="sr-only">Actions</span>
-                                </th>
-                            </tr>
-                        </thead>
+                                        <th scope="col">
+                                            <span class="sr-only" data-i18n="fields.action">
+                                                Action
+                                            </span>
+                                        </th>
+                                    </tr>
+                                </thead>
 
-                        <tbody id="employees-rows"></tbody>
-                    </table>
-                </div>
-            </section>
+                                <tbody id="history-rows"></tbody>
+                            </table>
+                        </div>
+                    </section>
 
-            <section
-                class="placeholder-view"
-                id="placeholder-view"
-                hidden
-            >
-                <h1 id="placeholder-title" tabindex="-1">
-                    Employees
-                </h1>
+                    <section
+                        class="history-detail"
+                        id="history-detail"
+                        aria-labelledby="history-detail-heading"
+                        hidden
+                    >
+                        <button
+                            type="button"
+                            class="history-back"
+                            id="history-back"
+                        >
+                            <i
+                                class="icon icon-arrow-left"
+                                aria-hidden="true"
+                            ></i><span data-i18n="history.all">All distributions</span></button>
 
-                <p>
-                    This workspace is not part of the Distribution demo yet.
-                </p>
-            </section>
-        </main>
+                        <header class="history-detail-header">
+                            <div>
+                                <p class="eyebrow" data-i18n="history.confirmed">
+                                    Confirmed distribution
+                                </p>
 
-        <dialog class="confirm-dialog" id="confirm-dialog" aria-labelledby="confirmation-heading" aria-describedby="confirmation-message">
-        <header><div><h2 id="confirmation-heading">Confirm distribution</h2><span id="confirm-reference"></span></div><button type="button" class="dialog-close" id="close-dialog" aria-label="Close confirmation"><i class="icon icon-x" aria-hidden="true"></i></button></header>
-        <dl class="confirmation-details">
-            <div class="confirmation-total"><dt>Tip pool</dt><dd id="confirm-total">—</dd></div>
-            <div><dt>Period</dt><dd id="confirm-period"></dd></div>
-            <div><dt>Scope</dt><dd>Hotel-wide pool</dd></div>
-            <div><dt>Included employees</dt><dd id="confirm-employees"></dd></div>
-            <div><dt>Eligible worked days</dt><dd id="confirm-days"></dd></div>
-        </dl>
-        <p class="confirmation-message" id="confirmation-message">Confirmation creates a read-only distribution record using the attendance data for this period.</p>
-        <p class="workflow-error" id="confirm-error" role="alert"></p>
-        <footer><button type="button" class="secondary-action" id="cancel-confirmation">Return to review</button><button type="button" class="primary-action" id="confirm-distribution">Confirm distribution</button></footer>
-    </dialog>
-    <dialog class="attendance-dialog" id="attendance-dialog" aria-labelledby="attendance-employee-name" aria-describedby="attendance-employee-context attendance-demo-note">
-        <header class="attendance-dialog-header">
-            <div><div class="attendance-dialog-identity"><h2 id="attendance-employee-name">Employee</h2><span id="attendance-employee-reference"></span></div><p id="attendance-employee-context"></p></div>
-            <button type="button" class="dialog-close" id="close-attendance-dialog" aria-label="Close attendance details"><i class="icon icon-x" aria-hidden="true"></i></button>
-        </header>
-        <div class="attendance-dialog-period">
-            <div><span>Attendance period</span><strong id="attendance-period-label"></strong></div>
-            <div class="attendance-period-summary"><div><span>Worked days</span><strong id="attendance-total-days"></strong></div><div><span>Total hours</span><strong id="attendance-total-hours"></strong></div></div>
+                                <h2 id="history-detail-heading" data-i18n="nav.distribution">
+                                    Distribution
+                                </h2>
+
+                                <span
+                                    class="record-reference"
+                                    id="history-detail-reference"
+                                ></span>
+                            </div>
+
+                            <div class="history-detail-total">
+                                <span data-i18n="fields.totalTips">Total tips</span>
+
+                                <strong id="history-detail-pool">
+                                    —
+                                </strong>
+                            </div>
+                        </header>
+
+                        <dl class="history-summary">
+                            <div>
+                                <dt data-i18n="fields.period">Period</dt>
+                                <dd id="history-detail-period">
+                                    —
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt data-i18n="nav.employees">Employees</dt>
+                                <dd id="history-detail-employees">
+                                    —
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt data-i18n="fields.allocated">Allocated</dt>
+                                <dd id="history-detail-allocated">
+                                    —
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt data-i18n="fields.difference">Difference</dt>
+                                <dd id="history-detail-difference">
+                                    —
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt data-i18n="fields.allocation">Allocation</dt>
+                                <dd id="history-detail-method">
+                                    —
+                                </dd>
+                            </div>
+
+                            <div>
+                                <dt data-i18n="fields.attendanceSource">Attendance source</dt>
+                                <dd id="history-detail-source">
+                                    —
+                                </dd>
+                            </div>
+                        </dl>
+
+                        <div class="history-items-heading">
+                            <div>
+                                <p class="eyebrow" data-i18n="fields.allocation">
+                                    Allocation
+                                </p>
+
+                                <h3 data-i18n="history.employeePayouts">Employee payouts</h3>
+                            </div>
+                        </div>
+
+                        <div
+                            class="history-table-container history-items-container"
+                            tabindex="0"
+                            role="region"
+                            aria-label="Distribution employee payouts"
+                            data-i18n-aria-label="a11y.distributionPayouts"
+                        >
+                            <table class="history-table history-items-table">
+                                <caption class="sr-only" data-i18n="history.payoutCaption">
+                                    Employee payouts for this distribution
+                                </caption>
+
+                                <colgroup>
+                                    <col class="history-item-employee">
+                                    <col class="history-item-role">
+                                    <col class="history-item-locations">
+                                    <col class="history-item-days">
+                                    <col class="history-item-hours">
+                                    <col class="history-item-payout">
+                                </colgroup>
+
+                                <thead>
+                                    <tr>
+                                        <th scope="col" data-i18n="fields.employee">Employee</th>
+                                        <th scope="col" data-i18n="fields.role">Role</th>
+                                        <th scope="col" data-i18n="fields.locations">Locations</th>
+                                        <th scope="col" data-i18n="fields.days">Days</th>
+                                        <th scope="col" data-i18n="fields.hours">Hours</th>
+                                        <th scope="col" data-i18n="fields.payout">Payout</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="history-detail-rows"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </section>
+
+                <section
+                    class="settings-view"
+                    id="settings-view"
+                    hidden
+                >
+                    <header class="settings-page-header">
+                        <div class="history-page-title">
+                            <p class="eyebrow" data-i18n="nav.settings">
+                                Settings
+                            </p>
+
+                            <h1
+                                id="settings-heading"
+                                tabindex="-1"
+                                data-i18n="nav.settings"
+                            >
+                                Settings
+                            </h1>
+
+                            <p class="history-description" data-i18n="settings.description">
+                                Workspace preferences and distribution configuration.
+                            </p>
+                        </div>
+                    </header>
+
+                    <section class="settings-section" aria-labelledby="settings-workspace-heading">
+                        <h2 id="settings-workspace-heading" data-i18n="settings.workspace">Workspace</h2>
+
+                        <dl class="settings-rows">
+                            <div class="settings-row">
+                                <dt data-i18n="settings.workspaceName">Workspace name</dt>
+                                <dd>
+                                    <div class="settings-inline-value" id="settings-workspace-display">
+                                        <span id="settings-workspace-name"></span>
+                                        <button class="settings-text-button" id="settings-workspace-edit" type="button" disabled data-i18n="common.edit">Edit</button>
+                                    </div>
+
+                                    <form class="settings-edit-form" id="settings-workspace-form" novalidate hidden>
+                                        <label class="sr-only" for="settings-workspace-input" data-i18n="settings.workspaceName">Workspace name</label>
+                                        <input id="settings-workspace-input" name="name" type="text" maxlength="100" autocomplete="organization" aria-describedby="settings-workspace-feedback">
+                                        <div class="settings-actions">
+                                            <button class="settings-text-button" id="settings-workspace-cancel" type="button" data-i18n="common.cancel">Cancel</button>
+                                            <button class="settings-save-button" id="settings-workspace-save" type="submit" data-i18n="common.saveChanges">Save changes</button>
+                                        </div>
+                                    </form>
+                                    <p class="settings-feedback" id="settings-workspace-feedback" role="status"></p>
+                                    <button class="settings-retry" id="settings-workspace-retry" type="button" hidden data-i18n="common.retry">Retry</button>
+                                </dd>
+                            </div>
+                        </dl>
+                    </section>
+
+                    <section class="settings-section" aria-labelledby="settings-distribution-heading">
+                        <h2 id="settings-distribution-heading" data-i18n="nav.distribution">Distribution</h2>
+
+                        <dl class="settings-rows">
+                            <div class="settings-row">
+                                <dt data-i18n="settings.currentMethod">Current distribution method</dt>
+                                <dd><span data-i18n="common.workedDays">Worked days</span><p class="settings-context" data-i18n="settings.methodContext">
+                                        Tips are distributed proportionally to each employee's worked days.
+                                    </p>
+                                </dd>
+                            </div>
+                        </dl>
+                    </section>
+
+                    <section class="settings-section" aria-labelledby="settings-locations-heading">
+                        <div class="settings-section-heading">
+                            <h2 id="settings-locations-heading" data-i18n="fields.locations">Locations</h2>
+                            <button class="settings-text-button" id="settings-add-location" type="button" disabled>
+                                <i class="icon icon-plus" aria-hidden="true"></i>
+                                <span data-i18n="settings.addLocation">Add location</span>
+                            </button>
+                        </div>
+
+                        <dl class="settings-rows">
+                            <div class="settings-row">
+                                <dt>
+                                    <span id="settings-use-locations-label" data-i18n="settings.useLocations">Use Locations</span>
+                                    <p class="settings-context" id="settings-locations-description" data-i18n="settings.locationsContext">
+                                        Locations organize employees and filtering. They never affect tip calculations.
+                                    </p>
+                                </dt>
+                                <dd>
+                                    <label class="settings-toggle">
+                                        <input id="settings-locations-enabled" type="checkbox" aria-labelledby="settings-use-locations-label" aria-describedby="settings-locations-description settings-locations-toggle-feedback" disabled>
+                                        <span id="settings-locations-enabled-label"></span>
+                                    </label>
+                                    <p class="settings-context" id="settings-locations-disabled-note" data-i18n="settings.locationsDisabledContext" hidden>
+                                        Location organization is off across the workspace. Existing assignments are kept.
+                                    </p>
+                                    <p class="settings-feedback" id="settings-locations-toggle-feedback" role="status"></p>
+                                </dd>
+                            </div>
+
+                            <div class="settings-row">
+                                <dt data-i18n="settings.configuredLocations">Configured locations</dt>
+                                <dd id="settings-locations-content" aria-busy="false">
+                                    <div class="settings-locations-controls">
+                                        <span id="settings-location-count" hidden></span>
+                                        <label class="settings-show-inactive">
+                                            <input id="settings-show-inactive" type="checkbox">
+                                            <span data-i18n="settings.showInactive">Show inactive</span>
+                                        </label>
+                                    </div>
+
+                                    <p
+                                        class="settings-feedback"
+                                        id="settings-locations-feedback"
+                                        role="status"
+                                    ></p>
+
+                                    <button
+                                        class="settings-retry"
+                                        id="settings-locations-retry"
+                                        type="button"
+                                        hidden
+                                        data-i18n="common.retry"
+                                    >
+                                        Retry
+                                    </button>
+
+                                    <ul
+                                        class="settings-location-list"
+                                        id="settings-location-list"
+                                        aria-label="Configured locations"
+                                        data-i18n-aria-label="settings.configuredLocations"
+                                    ></ul>
+                                </dd>
+                            </div>
+                        </dl>
+                    </section>
+
+                    <section class="settings-section" aria-labelledby="settings-preferences-heading">
+                        <h2 id="settings-preferences-heading" data-i18n="settings.preferences">Preferences</h2>
+
+                        <dl class="settings-rows">
+                            <div class="settings-row">
+                                <dt id="settings-language-label" data-i18n="settings.language">Language</dt>
+                                <dd>
+                                    <fieldset class="settings-preference-options" id="settings-language" aria-labelledby="settings-language-label">
+                                        <label>
+                                            <input type="radio" name="tipSplit-language" value="en">
+                                            <span lang="en">English</span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="tipSplit-language" value="pt">
+                                            <span lang="pt">Português</span>
+                                        </label>
+                                    </fieldset>
+                                </dd>
+                            </div>
+
+                            <div class="settings-row">
+                                <dt id="settings-theme-label" data-i18n="settings.theme">Theme</dt>
+                                <dd>
+                                    <fieldset class="settings-preference-options" id="settings-theme" aria-labelledby="settings-theme-label">
+                                        <label>
+                                            <input type="radio" name="tipSplit-theme" value="light">
+                                            <span data-i18n="settings.light">Light</span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="tipSplit-theme" value="dark">
+                                            <span data-i18n="settings.dark">Dark</span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="tipSplit-theme" value="system">
+                                            <span data-i18n="settings.system">System</span>
+                                        </label>
+                                    </fieldset>
+                                    <p class="settings-context" id="settings-system-context" data-i18n="settings.systemContext" hidden>Uses your operating system appearance.</p>
+                                </dd>
+                            </div>
+                        </dl>
+                        <p class="settings-feedback" id="settings-preferences-feedback" role="status"></p>
+                    </section>
+                </section>
+            </main>
         </div>
-        <p class="attendance-review-note" id="attendance-review-note" hidden></p>
-        <div class="attendance-table-wrapper" tabindex="0" role="region" aria-label="Daily attendance; scroll to view all dates">
-            <table class="attendance-table">
-                <caption class="sr-only">Daily attendance. Clock-out marked +1 day occurs on the following date. Worked duration is shown in hours and minutes.</caption>
-                <thead><tr><th scope="col">Date</th><th scope="col">Status</th><th scope="col">Clock in</th><th scope="col">Clock out</th><th scope="col">Worked</th></tr></thead>
-                <tbody id="attendance-records"></tbody>
-            </table>
-        </div>
-        <footer class="attendance-dialog-footer">
-            <span id="attendance-demo-note">Synthetic attendance generated locally for this demo.</span>
-            <div class="attendance-dialog-actions"><button type="button" class="secondary-action" id="review-attendance" hidden>Mark attendance reviewed</button><button type="button" class="secondary-action" id="attendance-dialog-done">Done</button></div>
-        </footer>
-    </dialog>
 
-    <dialog
-        class="employee-dialog"
-        id="employee-dialog"
-        aria-labelledby="employee-dialog-title"
-    >
-        <form id="employee-form">
+        <dialog
+            class="confirm-dialog"
+            id="confirm-dialog"
+            aria-labelledby="confirmation-heading"
+            aria-describedby="confirmation-message"
+        >
             <header>
                 <div>
-                    <p class="eyebrow">Team management</p>
-                    <h2 id="employee-dialog-title">Add employee</h2>
+                    <h2 id="confirmation-heading" data-i18n="distribution.confirm">
+                        Confirm distribution
+                    </h2>
+
+                    <span id="confirm-reference"></span>
                 </div>
 
                 <button
                     type="button"
                     class="dialog-close"
-                    id="close-employee-dialog"
-                    aria-label="Close employee form"
+                    id="close-dialog"
+                    aria-label="Close confirmation"
+                    data-i18n-aria-label="a11y.closeConfirmation"
                 >
-                    <i class="icon icon-x" aria-hidden="true"></i>
+                    <i
+                        class="icon icon-x"
+                        aria-hidden="true"
+                    ></i>
                 </button>
             </header>
 
-            <div class="employee-form-fields">
-                <label>
-                    <span>Employee code</span>
-                    <input
-                        type="text"
-                        id="employee-form-code"
-                        required
-                    >
-                </label>
+            <dl class="confirmation-details">
+                <div class="confirmation-total">
+                    <dt data-i18n="fields.tipPool">Tip pool</dt>
+                    <dd id="confirm-total">—</dd>
+                </div>
 
-                <label>
-                    <span>Name</span>
-                    <input
-                        type="text"
-                        id="employee-form-name"
-                        required
-                    >
-                </label>
+                <div>
+                    <dt data-i18n="fields.period">Period</dt>
+                    <dd id="confirm-period"></dd>
+                </div>
 
-                <label>
-                    <span>Email</span>
-                    <input
-                        type="email"
-                        id="employee-form-email"
-                    >
-                </label>
+                <div>
+                    <dt data-i18n="fields.scope">Scope</dt>
+                    <dd data-i18n="distribution.hotelWide">Hotel-wide pool</dd>
+                </div>
 
-                <label>
-                    <span>Role</span>
-                    <input
-                        type="text"
-                        id="employee-form-role"
-                        required
-                    >
-                </label>
+                <div>
+                    <dt data-i18n="fields.includedEmployees">Participants</dt>
+                    <dd id="confirm-employees"></dd>
+                </div>
 
-                <label>
-                    <span>Outlet</span>
-                    <select
-                        id="employee-form-outlet"
-                        required
-                    ></select>
-                </label>
+                <div>
+                    <dt data-i18n="fields.eligibleDays">Eligible worked days</dt>
+                    <dd id="confirm-days"></dd>
+                </div>
+            </dl>
 
-                <label class="employee-active-field">
-                    <input
-                        type="checkbox"
-                        id="employee-form-active"
-                        checked
-                    >
-                    <span>Active employee</span>
-                </label>
-            </div>
+            <p
+                class="confirmation-message"
+                id="confirmation-message"
+                data-i18n="distribution.confirmationMessage"
+            >
+                Confirmation creates a read-only distribution record using
+                the attendance data for this period.
+            </p>
 
             <p
                 class="workflow-error"
-                id="employee-form-error"
+                id="confirm-error"
                 role="alert"
             ></p>
 
@@ -524,29 +1366,293 @@
                 <button
                     type="button"
                     class="secondary-action"
-                    id="cancel-employee-form"
+                    id="cancel-confirmation"
+                    data-i18n="distribution.returnReview"
                 >
-                    Cancel
+                    Return to review
                 </button>
 
                 <button
-                    type="submit"
+                    type="button"
                     class="primary-action"
-                    id="save-employee"
+                    id="confirm-distribution"
+                    data-i18n="distribution.confirm"
                 >
-                    Add employee
+                    Confirm distribution
                 </button>
             </footer>
-        </form>
-    </dialog>
+        </dialog>
 
-    <script src="./src/data/defaults.js"></script>
-    <script src="./src/data/attendance.js"></script>
-    <script src="./src/distribution.js"></script>
-    <script src="./src/distribution-state.js"></script>
-    <script src="./src/services/storage.js"></script>
-    <script src="./src/services/distribution-api.js"></script>
-    <script src="./src/custom-select.js"></script>
-    <script src="./src/script.js"></script>
+        <dialog
+            class="attendance-dialog"
+            id="attendance-dialog"
+            aria-labelledby="attendance-employee-name"
+            aria-describedby="attendance-employee-context attendance-evidence-note"
+        >
+            <header class="attendance-dialog-header">
+                <div>
+                    <div class="attendance-dialog-identity">
+                        <h2 id="attendance-employee-name" data-i18n="fields.employee">
+                            Employee
+                        </h2>
+
+                        <span id="attendance-employee-reference"></span>
+                    </div>
+
+                    <p id="attendance-employee-context"></p>
+                </div>
+
+                <button
+                    type="button"
+                    class="dialog-close"
+                    id="close-attendance-dialog"
+                    aria-label="Close attendance details"
+                    data-i18n-aria-label="a11y.closeAttendance"
+                >
+                    <i
+                        class="icon icon-x"
+                        aria-hidden="true"
+                    ></i>
+                </button>
+            </header>
+
+            <div class="attendance-dialog-period">
+                <div>
+                    <span data-i18n="attendance.period">Attendance period</span>
+                    <strong id="attendance-period-label"></strong>
+                </div>
+
+                <div class="attendance-period-summary">
+                    <div>
+                        <span data-i18n="common.workedDays">Worked days</span>
+                        <strong id="attendance-total-days"></strong>
+                    </div>
+
+                    <div>
+                        <span data-i18n="attendance.totalHours">Total hours</span>
+                        <strong id="attendance-total-hours"></strong>
+                    </div>
+                </div>
+            </div>
+
+            <p
+                class="attendance-review-note"
+                id="attendance-review-note"
+                hidden
+            ></p>
+
+            <div
+                class="attendance-table-wrapper"
+                tabindex="0"
+                role="region"
+                aria-label="Daily attendance"
+                data-i18n-aria-label="a11y.dailyAttendance"
+            >
+                <table class="attendance-table">
+                    <caption class="sr-only" data-i18n="attendance.tableCaption">
+                        Daily attendance. Clock-out marked +1 day occurs
+                        on the following date.
+                    </caption>
+
+                    <thead>
+                        <tr>
+                            <th scope="col" data-i18n="fields.date">Date</th>
+                            <th scope="col" data-i18n="fields.status">Status</th>
+                            <th scope="col" data-i18n="attendance.clockIn">Clock in</th>
+                            <th scope="col" data-i18n="attendance.clockOut">Clock out</th>
+                            <th scope="col" data-i18n="attendance.worked">Worked</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="attendance-records"></tbody>
+                </table>
+            </div>
+
+            <footer class="attendance-dialog-footer">
+                <span id="attendance-evidence-note" data-i18n="attendance.evidenceNote">
+                    Hours are attendance evidence only.
+                </span>
+
+                <div class="attendance-dialog-actions">
+                    <button
+                        type="button"
+                        class="secondary-action"
+                        id="attendance-dialog-done"
+                        data-i18n="common.done"
+                    >
+                        Done
+                    </button>
+                </div>
+            </footer>
+        </dialog>
+
+        <dialog
+            class="employee-dialog"
+            id="employee-dialog"
+            aria-labelledby="employee-dialog-title"
+        >
+            <form
+                class="employee-form"
+                id="employee-form" novalidate
+            >
+                <header class="employee-dialog-header">
+                    <div>
+                        <p class="eyebrow" data-i18n="employees.team">
+                            Team
+                        </p>
+
+                        <h2 id="employee-dialog-title" data-i18n="employees.add">
+                            Add employee
+                        </h2>
+
+                        <p class="employee-dialog-description" data-i18n="employees.formDescription">
+                            Manage employee details and workplace locations.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="dialog-close"
+                        id="close-employee-dialog"
+                        aria-label="Close employee form"
+                        data-i18n-aria-label="a11y.closeEmployee"
+                    >
+                        <i
+                            class="icon icon-x"
+                            aria-hidden="true"
+                        ></i>
+                    </button>
+                </header>
+
+                <div class="employee-form-fields">
+                    <label class="employee-form-field">
+                        <span data-i18n="fields.employeeCode">Employee code</span>
+
+                        <input
+                            type="text"
+                            id="employee-form-code"
+                            required
+                        >
+                    </label>
+
+                    <label class="employee-form-field">
+                        <span data-i18n="fields.name">Name</span>
+
+                        <input
+                            type="text"
+                            id="employee-form-name"
+                            required
+                        >
+                    </label>
+
+                    <label class="employee-form-field">
+                        <span data-i18n="fields.email">Email</span>
+
+                        <input
+                            type="email"
+                            id="employee-form-email"
+                        >
+                    </label>
+
+                    <label class="employee-form-field">
+                        <span data-i18n="fields.role">Role</span>
+
+                        <input
+                            type="text"
+                            id="employee-form-role"
+                            required
+                        >
+                    </label>
+                </div>
+
+                <fieldset class="employee-locations-field" data-location-ui>
+                    <legend data-i18n="fields.locations">Locations</legend>
+
+                    <p data-i18n="employees.locationsHelp">
+                        Optional. Select every location where this employee works.
+                    </p>
+
+                    <div
+                        class="employee-location-options"
+                        id="employee-form-locations"
+                    ></div>
+                </fieldset>
+
+                <label class="employee-active-field">
+                    <input
+                        type="checkbox"
+                        id="employee-form-active"
+                        checked
+                    >
+
+                    <span data-i18n="employees.activeEmployee">Active employee</span>
+                </label>
+
+                <p
+                    class="workflow-error employee-form-error"
+                    id="employee-form-error"
+                    role="alert"
+                ></p>
+
+                <footer class="employee-dialog-footer">
+                    <button
+                        type="button"
+                        class="secondary-action"
+                        id="cancel-employee-form"
+                        data-i18n="common.cancel"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-action"
+                        id="save-employee"
+                        data-i18n="employees.add"
+                    >
+                        Add employee
+                    </button>
+                </footer>
+            </form>
+        </dialog>
+
+        <dialog class="settings-dialog" id="settings-location-dialog" aria-labelledby="settings-location-dialog-heading" aria-describedby="settings-location-dialog-context">
+            <form class="settings-dialog-form" id="settings-location-form" novalidate>
+                <header class="settings-dialog-header">
+                    <div class="settings-dialog-title">
+                        <p class="eyebrow" data-i18n="fields.locations">Locations</p>
+                        <h2 id="settings-location-dialog-heading" data-i18n="settings.addLocation">Add location</h2>
+                        <p class="settings-dialog-description" id="settings-location-dialog-context" data-i18n="settings.addLocationContext">Create a workplace location for employee organization.</p>
+                    </div>
+                    <button class="dialog-close" id="settings-location-close" type="button" aria-label="Close location dialog" data-i18n-aria-label="a11y.closeLocation">
+                        <i class="icon icon-x" aria-hidden="true"></i>
+                    </button>
+                </header>
+                <label class="settings-field" for="settings-location-input">
+                    <span data-i18n="settings.locationName">Location name</span>
+                    <input id="settings-location-input" name="name" type="text" maxlength="100" autocomplete="off" aria-describedby="settings-location-form-feedback">
+                </label>
+                <label class="settings-toggle" id="settings-location-active-field" hidden>
+                    <input id="settings-location-active" name="active" type="checkbox" aria-describedby="settings-location-preservation">
+                    <span data-i18n="settings.activeLocation">Active location</span>
+                </label>
+                <p class="settings-context" id="settings-location-preservation" data-i18n="settings.inactivePreserved" hidden>Deactivation keeps existing assignments and history.</p>
+                <p class="settings-feedback" id="settings-location-form-feedback" role="alert"></p>
+                <footer class="settings-dialog-footer">
+                    <button class="settings-text-button" id="settings-location-cancel" type="button" data-i18n="common.cancel">Cancel</button>
+                    <button class="settings-save-button" id="settings-location-save" type="submit" data-i18n="settings.addLocation">Add location</button>
+                </footer>
+            </form>
+        </dialog>
+
+        <script src="./src/i18n.js"></script>
+        <script src="./src/data/attendance.js"></script>
+        <script src="./src/distribution.js"></script>
+        <script src="./src/distribution-state.js"></script>
+        <script src="./src/identity.js"></script>
+        <script src="./src/services/distribution-api.js"></script>
+        <script src="./src/custom-select.js"></script>
+        <script src="./src/script.js"></script>
+        <script src="./src/settings.js"></script>
     </body>
 </html>

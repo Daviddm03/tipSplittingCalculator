@@ -1,30 +1,55 @@
+const i18n = window.TipSplitI18n;
+const t = (key, params) => i18n.t(key, params);
+const localizedMessages = new Map();
+
+function setMessage(element, key, params = {}) {
+    const value = t(key, params);
+    element.textContent = value;
+    localizedMessages.set(element, { key, params, last: value });
+}
+
+function setError(element, error, fallbackKey) {
+    const value = i18n.error(error, fallbackKey);
+    element.textContent = value;
+    localizedMessages.set(element, { error, fallbackKey, last: value });
+}
+
 const state = {
-    employees: [], 
+    distributionEmployees: [],
+    employeeDirectory: [],
+    locations: [],
     employeesLoaded: false,
     employeesLoading: false,
-    search: '', 
-    outlet: 'all', 
-    status: 'all', 
+    locationsLoaded: false,
+    search: '',
+    location: 'all',
+    status: 'all',
     preview: null,
-    previewStale: false, 
-    confirmed: null, 
+    previewStale: false,
+    confirmed: null,
     monthPickerYear: 2026,
-    attendanceEmployeeId: null, 
-    draftId: null, 
-    confirming: false, 
+    attendanceEmployeeId: null,
+    draftId: null,
+    confirming: false,
     loadingAttendance: false,
-    history: [], 
-    historyLoaded: false, 
+    attendanceReady: false,
+    attendanceError: null,
+    attendanceRefreshNeeded: false,
+    calculating: false,
+    history: [],
+    historyLoaded: false,
     historyLoading: false,
     historyDetail: null,
+    historyError: null,
     editingEmployeeId: null,
-    savingEmployee: false,  
+    openingEmployee: false,
+    savingEmployee: false,
 };
 
 const elementIds = {
     distributionView: 'distribution-view',
-    placeholderView: 'placeholder-view',
-    placeholderTitle: 'placeholder-title',
+    settingsView: 'settings-view',
+    settingsHeading: 'settings-heading',
     period: 'period',
     periodControl: 'period-control',
     periodTrigger: 'period-trigger',
@@ -35,11 +60,11 @@ const elementIds = {
     previousYear: 'previous-year',
     nextYear: 'next-year',
     currentMonthButton: 'current-month-button',
-    tips: 'tips', 
+    tips: 'tips',
     tipsError: 'tips-error',
     employeeRows: 'employee-rows',
     employeeSearch: 'employee-search',
-    outletFilter: 'outlet-filter',
+    locationFilter: 'location-filter',
     statusFilter: 'status-filter',
     includedCount: 'included-count',
     visibleCount: 'visible-count',
@@ -54,7 +79,8 @@ const elementIds = {
     summaryAllocated: 'summary-allocated',
     summaryDifference: 'summary-difference',
     previewStatus: 'preview-status',
-    includeVisibleButton: 'include-visible-button',
+    attendanceState: 'attendance-state',
+    attendanceRetry: 'attendance-retry',
     calculateButton: 'calculate-button',
     confirmDialog: 'confirm-dialog',
     closeDialog: 'close-dialog',
@@ -77,12 +103,9 @@ const elementIds = {
     attendanceTotalHours: 'attendance-total-hours',
     attendanceRecords: 'attendance-records',
     attendanceReviewNote: 'attendance-review-note',
-    reviewAttendance: 'review-attendance',
     pageTitle: 'distribution-heading',
     attendanceCoverage: 'attendance-coverage',
     attendanceSource: 'attendance-source',
-    attendanceAttentionCount: 'attendance-attention-count',
-    attendanceDetailsButton: 'attendance-details-button',
     tableNoteEmployees: 'table-note-employees',
     tableNoteDays: 'table-note-days',
     workflowError: 'workflow-error',
@@ -92,6 +115,7 @@ const elementIds = {
     historyView: 'history-view',
     historyHeading: 'history-heading',
     historyCount: 'history-count',
+    historyPageHeader: 'history-page-header',
     historyFeedback: 'history-feedback',
     historyList: 'history-list',
     historyRows: 'history-rows',
@@ -107,15 +131,18 @@ const elementIds = {
     historyDetailMethod: 'history-detail-method',
     historyDetailSource: 'history-detail-source',
     historyDetailRows: 'history-detail-rows',
-    historyDetailSource: 'history-detail-source',
-    historyDetailRows: 'history-detail-rows',
+    historySummaryLine: 'history-summary-line',
     employeesView: 'employees-view',
     employeesHeading: 'employees-heading',
     employeesCount: 'employees-count',
     employeesFeedback: 'employees-feedback',
     employeesSearch: 'employees-search',
-    employeesOutletFilter: 'employees-outlet-filter',
+    employeesLocationFilter: 'employees-location-filter',
+    employeesLocationTriggerLabel: 'employees-location-trigger-label',
+    employeesLocationMenu: 'employees-location-menu',
     employeesStatusFilter: 'employees-status-filter',
+    employeesStatusTriggerLabel: 'employees-status-trigger-label',
+    employeesStatusMenu: 'employees-status-menu',
     employeesRows: 'employees-rows',
     addEmployee: 'add-employee',
     employeeDialog: 'employee-dialog',
@@ -125,7 +152,7 @@ const elementIds = {
     employeeFormName: 'employee-form-name',
     employeeFormEmail: 'employee-form-email',
     employeeFormRole: 'employee-form-role',
-    employeeFormOutlet: 'employee-form-outlet',
+    employeeFormLocations: 'employee-form-locations',
     employeeFormActive: 'employee-form-active',
     employeeFormError: 'employee-form-error',
     closeEmployeeDialog: 'close-employee-dialog',
@@ -136,13 +163,20 @@ const elementIds = {
 const elements = Object.fromEntries(Object.entries(elementIds).map(([name, id]) => [name, document.getElementById(id)]));
 elements.recordReference = document.querySelector('.record-reference');
 elements.recordStatus = document.querySelector('.record-status');
-elements.attendanceException = document.querySelector('.attendance-exception');
 elements.attendanceTableWrapper = document.querySelector('.attendance-table-wrapper');
-const monthNames = Array.from({ length: 12 }, (_, month) => new Intl.DateTimeFormat('en-IE', { month: 'long' }).format(new Date(2026, month, 1)));
+let monthNames = [];
+function updateMonthNames() {
+    monthNames = Array.from({ length: 12 }, (_, month) => new Intl.DateTimeFormat(i18n.locale(), { month: 'long' }).format(new Date(2026, month, 1)));
+}
+updateMonthNames();
 let repository = null;
+let locationsRequest = null;
 let dialogOrigin = null;
 let attendanceRequest = 0;
+let historyRevision = 0;
+let employeeDialogOrigin = null;
 const filterControls = [];
+const distributionFilters = {};
 
 function closeOpenControls() {
     closeMonthPicker();
@@ -150,28 +184,90 @@ function closeOpenControls() {
 }
 
 function bindFilters() {
-    for (const name of ['outlet', 'status']) {
+    const controls = [
+        {
+            stateKey: 'location',
+            trigger: elements.locationFilter,
+            label: document.getElementById('location-trigger-label'),
+            menu: document.getElementById('location-menu')
+        },
+        {
+            stateKey: 'status',
+            trigger: elements.statusFilter,
+            label: document.getElementById('status-trigger-label'),
+            menu: document.getElementById('status-menu')
+        }
+    ];
+
+    controls.forEach(({ stateKey, trigger, label, menu }) => {
         const control = createCustomSelect({
-            trigger: elements[name + 'Filter'],
-            label: document.getElementById(name + '-trigger-label'),
-            menu: document.getElementById(name + '-menu'),
+            trigger,
+            label,
+            menu,
             onOpen: closeOpenControls,
-            onChange: value => { state[name] = value; render(); announce(getVisibleEmployees().length + ' employees visible. Distribution population unchanged.'); }
+            onChange: value => {
+                state[stateKey] = value;
+                render();
+
+                announce('employees.filterAnnouncement', { count: formatNumber(getVisibleEmployees().length) });
+            }
         });
+
+        distributionFilters[stateKey] = control;
         filterControls.push(control);
-    }
+    });
 }
 
+let employeesLocationValue = 'all';
+let employeesStatusValue = 'all';
+
+const employeesLocationSelect = createCustomSelect({
+    trigger: elements.employeesLocationFilter,
+    label: elements.employeesLocationTriggerLabel,
+    menu: elements.employeesLocationMenu,
+    onOpen: closeOpenControls,
+    onChange: value => {
+        employeesLocationValue = value;
+        populateEmployeeLocationFilter();
+        renderEmployees();
+    }
+});
+
+const employeesStatusSelect = createCustomSelect({
+    trigger: elements.employeesStatusFilter,
+    label: elements.employeesStatusTriggerLabel,
+    menu: elements.employeesStatusMenu,
+    onOpen: closeOpenControls,
+    onChange: value => {
+        employeesStatusValue = value;
+        populateEmployeeStatusFilter();
+        renderEmployees();
+    }
+});
+
+filterControls.push(
+    employeesLocationSelect,
+    employeesStatusSelect
+);
+
 function formatNumber(value) {
-    return new Intl.NumberFormat('en-IE').format(value);
+    return new Intl.NumberFormat(i18n.locale()).format(value);
 }
 
 function formatCurrencyFromCents(cents) {
-    return '€' + formatCents(cents);
+    const amount = BigInt(cents);
+    const absolute = amount < 0n ? -amount : amount;
+    const whole = Number(absolute / 100n) * (amount < 0n ? -1 : 1);
+    const fraction = String(absolute % 100n).padStart(2, '0');
+
+    return new Intl.NumberFormat(i18n.locale(), { style: 'currency', currency: 'EUR' })
+        .formatToParts(whole)
+        .map(part => part.type === 'fraction' ? fraction : part.value)
+        .join('');
 }
 
 function formatHours(minutes) {
-    return new Intl.NumberFormat('en-IE', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(minutes / 60);
+    return formatAttendanceDuration(minutes);
 }
 
 function formatPeriod(period) {
@@ -184,7 +280,7 @@ function formatPeriod(period) {
     const date = new Date(0);
     date.setUTCFullYear(year, month - 1, 1);
 
-    return new Intl.DateTimeFormat('en-IE', {
+    return new Intl.DateTimeFormat(i18n.locale(), {
         month: 'long',
         year: 'numeric',
         timeZone: 'UTC'
@@ -195,16 +291,86 @@ function getTipsCents() {
     return parseMoneyToCents(elements.tips.value);
 }
 
+function getEmployeeLocationNames(employee) {
+    if (!Array.isArray(employee.locations)) {
+        return [];
+    }
+
+    return employee.locations
+        .map(location => {
+            return typeof location === 'string'
+                ? location
+                : location.name;
+        })
+        .filter(Boolean);
+}
+
+function syncCurrentLocationNames(employees) {
+    if (!state.locationsLoaded) return employees;
+
+    return employees.map(employee => ({
+        ...employee,
+        locations: (employee.locations || []).map(location => {
+            const current = state.locations.find(item => item.id === location.id);
+            return current ? { ...location, name: current.name, active: current.active } : location;
+        })
+    }));
+}
+
+function getEmployeeLocationLabel(employee) {
+    const locations = getEmployeeLocationNames(employee);
+
+    return locations.length
+        ? locations.join(', ')
+        : '—';
+}
+
 function getVisibleEmployees() {
-    return filterEmployees(state.employees, state);
+    const search = state.search.trim().toLowerCase();
+
+    return state.distributionEmployees.filter(employee => {
+        const locations = getEmployeeLocationNames(employee);
+
+        const matchesSearch =
+            !search ||
+            employee.name.toLowerCase().includes(search) ||
+            String(employee.reference || '')
+                .toLowerCase()
+                .includes(search) ||
+            String(employee.role || '')
+                .toLowerCase()
+                .includes(search) ||
+            (window.TipSplitSettings?.locationsEnabled() !== false && locations.some(location =>
+                location.toLowerCase().includes(search)
+            ));
+
+        const matchesLocation =
+            state.location === 'all' ||
+            locations.includes(state.location);
+
+        const matchesStatus =
+            state.status === 'all' ||
+            (
+                state.status === 'participating' &&
+                employee.daysWorked > 0
+            ) ||
+            (
+                state.status === 'no-worked-days' &&
+                employee.daysWorked === 0
+            );
+
+        return (
+            matchesSearch &&
+            matchesLocation &&
+            matchesStatus
+        );
+    });
 }
 
-function getIncludedEmployees() {
-    return state.employees.filter(employee => employee.included);
-}
-
-function getAttentionEmployees() {
-    return state.employees.filter(employee => employee.attention);
+function getParticipants() {
+    return state.distributionEmployees.filter(
+        employee => employee.daysWorked > 0
+    );
 }
 
 function currentPreview() {
@@ -212,11 +378,11 @@ function currentPreview() {
 }
 
 function editingLocked() {
-    return Boolean(state.confirmed) || state.confirming || state.loadingAttendance;
+    return Boolean(state.confirmed) || state.confirming || state.loadingAttendance || state.calculating;
 }
 
-function announce(message) {
-    elements.workspaceStatus.textContent = message;
+function announce(key, params = {}) {
+    setMessage(elements.workspaceStatus, key, params);
 }
 
 function invalidatePreview() {
@@ -240,29 +406,7 @@ function restoreEmployeeFocus(id, selector) {
 function createEmployeeRow(employee) {
     const row = document.createElement('tr');
     row.dataset.employeeId = employee.id;
-    row.classList.toggle('attention-row', employee.attention);
-    row.classList.toggle('excluded-row', !employee.included);
-    const includeCell = document.createElement('td');
-    includeCell.className = 'include-cell';
-    const includeLabel = document.createElement('label');
-    includeLabel.className = 'include-target';
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.dataset.employeeId = employee.id;
-    checkbox.checked = employee.included;
-    checkbox.disabled = editingLocked() || employee.attention || employee.daysWorked === 0;
-    checkbox.setAttribute('aria-label', 'Include ' + employee.name);
-    checkbox.setAttribute('aria-describedby', 'employee-meta-' + employee.id);
-    checkbox.addEventListener('change', () => {
-        if (editingLocked()) return;
-        employee.included = checkbox.checked;
-        invalidatePreview();
-        render();
-        restoreEmployeeFocus(employee.id, 'input');
-        announce((employee.included ? 'Included ' : 'Excluded ') + employee.name + '. ' + getIncludedEmployees().length + ' employees included.');
-    });
-    includeLabel.appendChild(checkbox);
-    includeCell.appendChild(includeLabel);
+    row.classList.toggle('excluded-row', employee.daysWorked === 0);
     const identity = document.createElement('td');
     const wrapper = document.createElement('div');
     wrapper.className = 'employee-identity';
@@ -271,45 +415,45 @@ function createEmployeeRow(employee) {
     details.className = 'employee-details-button';
     details.textContent = employee.name;
     details.title = employee.name;
-    details.setAttribute('aria-label', 'View attendance for ' + employee.name);
+    details.setAttribute('aria-label', t('employees.viewAttendance', { name: employee.name }));
     details.addEventListener('click', () => openAttendanceDialog(employee.id));
     const meta = document.createElement('span');
     meta.id = 'employee-meta-' + employee.id;
-    const status = employee.attentionReason || (employee.included ? employee.role : 'Excluded');
+    const status = employee.daysWorked > 0 ? employee.role : t('attendance.noWorkedDays');
     meta.textContent = [employee.reference, status].filter(Boolean).join(' · ');
-    meta.classList.toggle('employee-attention', employee.attention);
     wrapper.append(details, meta);
     identity.appendChild(wrapper);
     const payment = currentPreview()?.payments.find(item => item.id === employee.id);
-    row.append(includeCell, identity, createCell(employee.outlet), createCell(formatNumber(employee.daysWorked), 'numeric-cell'),
+    row.append(identity, createCell(getEmployeeLocationLabel(employee)), createCell(formatNumber(employee.daysWorked), 'numeric-cell'),
         createCell(formatHours(employee.workedMinutes), 'numeric-cell'),
-        createCell(payment ? formatCurrencyFromCents(payment.amountCents) : '—', 'numeric-cell payout-cell'));
+        createCell(payment ? formatCurrencyFromCents(payment.amountCents)
+            : currentPreview() && employee.daysWorked === 0 ? formatCurrencyFromCents(0) : '—', 'numeric-cell payout-cell'));
     return row;
 }
 
 function clearFilters() {
     state.search = '';
-    state.outlet = 'all';
+    state.location = 'all';
     state.status = 'all';
     elements.employeeSearch.value = '';
     render();
     elements.employeeSearch.focus();
-    announce('Filters cleared. ' + state.employees.length + ' employees visible.');
+    announce('employees.filtersCleared', { count: formatNumber(state.distributionEmployees.length) });
 }
 
-function renderEmployees(visible, summary) {
+function renderDistributionEmployees(visible, summary) {
     const fragment = document.createDocumentFragment();
     visible.forEach(employee => fragment.appendChild(createEmployeeRow(employee)));
     if (!visible.length) {
         const row = document.createElement('tr');
-        const cell = createCell(state.employees.length ? 'No employees match these filters. ' : 'No employees available for this period. ', 'empty-state');
-        cell.colSpan = 6;
-        if (state.employees.length) {
+        const cell = createCell(t(state.distributionEmployees.length ? 'employees.noMatches' : 'employees.noPeriodEmployees'), 'empty-state');
+        cell.colSpan = window.TipSplitSettings?.locationsEnabled() === false ? 4 : 5;
+        if (state.distributionEmployees.length) {
             const reset = document.createElement('button');
             reset.type = 'button';
             reset.id = 'clear-filters';
             reset.className = 'text-action';
-            reset.textContent = 'Clear filters';
+            reset.textContent = t('employees.clearFilters');
             reset.addEventListener('click', clearFilters);
             cell.appendChild(reset);
         }
@@ -317,28 +461,69 @@ function renderEmployees(visible, summary) {
         fragment.appendChild(row);
     }
     elements.employeeRows.replaceChildren(fragment);
-    elements.visibleCount.textContent = formatNumber(visible.length) + ' visible of ' + formatNumber(state.employees.length) + ' · visible totals';
+    elements.visibleCount.textContent = t('employees.visibleTotals', { visible: formatNumber(visible.length), total: formatNumber(state.distributionEmployees.length) });
     elements.footerDays.textContent = formatNumber(summary.visibleDays);
     elements.footerHours.textContent = formatHours(summary.visibleMinutes);
     elements.footerPayout.textContent = currentPreview() ? formatCurrencyFromCents(summary.visiblePayoutCents) : '—';
-    const eligible = visible.filter(employee => !employee.included && !employee.attention && employee.daysWorked > 0);
-    elements.includeVisibleButton.disabled = !eligible.length || editingLocked();
-    elements.includeVisibleButton.textContent = eligible.length ? 'Include ' + eligible.length + ' eligible visible' : 'No visible employees to include';
 }
 
 function renderFilters() {
-    const outlets = [...new Set(state.employees.map(employee => employee.outlet))];
-    filterControls[0].update([{ value: 'all', label: 'All outlets' }, ...outlets.map(outlet => ({ value: outlet, label: outlet }))], state.outlet);
-    const options = [['all', 'All employees', state.employees.length], ['included', 'Included', getIncludedEmployees().length],
-        ['excluded', 'Excluded', state.employees.length - getIncludedEmployees().length], ['attention', 'Needs attention', getAttentionEmployees().length]];
-    filterControls[1].update(options.map(([value, label, count]) => ({ value, label, count })), state.status);
+    const locations = [
+        ...new Set(
+            state.distributionEmployees.flatMap(
+                getEmployeeLocationNames
+            )
+        )
+    ].sort((a, b) => a.localeCompare(b));
+
+    distributionFilters.location.update(
+        [
+            {
+                value: 'all',
+                label: t('common.allLocations')
+            },
+            ...locations.map(location => ({
+                value: location,
+                label: location
+            }))
+        ],
+        state.location
+    );
+
+    const options = [
+        [
+            'all',
+            t('common.allEmployees'),
+            state.distributionEmployees.length
+        ],
+        [
+            'participating',
+            t('distribution.participating'),
+            getParticipants().length
+        ],
+        [
+            'no-worked-days',
+            t('attendance.noWorkedDays'),
+            state.distributionEmployees.length -
+                getParticipants().length
+        ]
+    ];
+
+    distributionFilters.status.update(
+        options.map(([value, label, count]) => ({
+            value,
+            label,
+            count
+        })),
+        state.status
+    );
 }
 
 function renderMonthPicker() {
     const { year, month } = parseAttendancePeriod(elements.period.value);
     elements.monthPickerYear.textContent = state.monthPickerYear;
-    elements.previousYear.disabled = state.monthPickerYear <= 1;
-    elements.nextYear.disabled = state.monthPickerYear >= 9999;
+    elements.previousYear.disabled = state.monthPickerYear <= 2000;
+    elements.nextYear.disabled = state.monthPickerYear >= 2100;
     elements.monthGrid.replaceChildren(...monthNames.map((name, index) => {
         const button = document.createElement('button');
         button.type = 'button';
@@ -370,40 +555,41 @@ function openMonthPicker() {
     elements.monthGrid.querySelector('.selected').focus();
 }
 
-async function selectPeriod(year, month) {
-    if (state.confirming) return;
+async function selectPeriod(year, month, retry = false) {
+    if (state.confirming || state.calculating) return;
     const period = String(year).padStart(4, '0') + '-' + String(month).padStart(2, '0');
     parseAttendancePeriod(period);
+    if (period === elements.period.value && state.attendanceReady && !retry && !state.loadingAttendance) return;
     const request = ++attendanceRequest;
-    closeMonthPicker(true);
-    if (period !== elements.period.value || state.loadingAttendance) {
-        let employees;
-        state.loadingAttendance = true;
-        render();
-        try { employees = await (repository ? repository.loadAttendance(period) : createDemoAttendance(defaultEmployees, period)); }
-        catch (error) {
-            if (request !== attendanceRequest) return;
-            state.loadingAttendance = false;
-            elements.workflowError.textContent = error.message;
-            render();
-            return;
-        }
+    closeMonthPicker();
+    elements.period.value = period;
+    state.loadingAttendance = true;
+    state.attendanceReady = false;
+    state.attendanceError = null;
+    state.attendanceRefreshNeeded = false;
+    state.distributionEmployees = [];
+    state.preview = null;
+    state.previewStale = false;
+    state.confirmed = null;
+    state.draftId = createStableId();
+    state.search = ''; state.location = 'all'; state.status = 'all';
+    elements.employeeSearch.value = '';
+    elements.workflowError.textContent = '';
+    elements.workflowNotice.textContent = '';
+    render();
+    try {
+        if (!repository) throw new Error(t('errors.serviceUnavailable'));
+        const employees = await repository.loadAttendance(period);
         if (request !== attendanceRequest) return;
-        state.loadingAttendance = false;
-        elements.period.value = period;
-        state.employees = employees;
-        state.preview = null;
-        state.previewStale = false;
-        state.confirmed = null;
-        state.draftId = createStableId();
-        state.search = '';
-        state.outlet = 'all';
-        state.status = 'all';
-        elements.employeeSearch.value = '';
-        elements.workflowError.textContent = '';
-        elements.workflowNotice.textContent = '';
-        render();
-       announce(formatPeriod(period) +' selected. Attendance loaded from the server.');
+        state.distributionEmployees = syncCurrentLocationNames(employees);
+        state.attendanceReady = true;
+        announce('attendance.periodLoaded', { period: formatPeriod(period) });
+    } catch (error) {
+        if (request !== attendanceRequest) return;
+        state.attendanceError = error;
+        setError(elements.workflowError, error, 'errors.loadAttendance');
+    } finally {
+        if (request === attendanceRequest) { state.loadingAttendance = false; render(); }
     }
 }
 
@@ -416,66 +602,76 @@ function updateReconciliation() {
     elements.previewStatus.hidden = !state.previewStale;
     elements.summaryAllocated.textContent = preview ? formatCurrencyFromCents(preview.totalDistributedCents) : '—';
     elements.summaryDifference.textContent = preview ? formatCurrencyFromCents(preview.totalTipsCents - preview.totalDistributedCents) : '—';
-    elements.calculateButton.replaceChildren(document.createTextNode(state.confirmed ? 'Confirmed' : preview ? 'Confirm distribution' : state.previewStale ? 'Recalculate payouts' : 'Calculate payouts'));
+    elements.calculateButton.replaceChildren(document.createTextNode(t(state.confirmed ? 'common.confirmed' : state.calculating ? 'distribution.calculating' : preview ? 'distribution.confirm' : state.previewStale ? 'distribution.recalculate' : 'distribution.calculate')));
     const icon = document.createElement('i');
     icon.className = 'icon ' + (state.confirmed ? 'icon-check' : state.previewStale ? 'icon-refresh-cw' : 'icon-arrow-right');
     icon.setAttribute('aria-hidden', 'true');
     elements.calculateButton.appendChild(icon);
-    elements.calculateButton.disabled = editingLocked();
+    elements.calculateButton.disabled = editingLocked() || !state.attendanceReady || Boolean(state.attendanceError) || !getParticipants().length;
 }
 
 function render() {
     const visible = getVisibleEmployees();
-    const summary = summarizeWorkspace(state.employees, visible, currentPreview());
+    const summary = summarizeWorkspace(state.distributionEmployees, visible, currentPreview());
     if (state.confirmed) {
-        summary.includedCount = state.confirmed.employeeCount;
-        summary.includedDays = state.confirmed.totalWorkedDays;
+        summary.participantCount = state.confirmed.employeeCount;
+        summary.participantDays = state.confirmed.totalWorkedDays;
     }
     const { year, month, days } = parseAttendancePeriod(elements.period.value);
-    elements.pageTitle.textContent = monthNames[month - 1] + ' distribution';
+    elements.pageTitle.textContent = formatPeriod(elements.period.value);
     elements.periodTriggerLabel.textContent = formatPeriod(elements.period.value);
-    elements.recordReference.textContent = state.confirmed?.reference || 'TS-DEMO-' + elements.period.value;
-    elements.recordStatus.textContent = state.confirmed ? 'Confirmed' : currentPreview() ? 'Review' : 'Draft';
-    elements.attendanceCoverage.textContent = 'Attendance 01–' + days + ' ' + monthNames[month - 1].slice(0, 3) + ' ' + year;
-    elements.attendanceSource.textContent = 'Demo HR attendance · PostgreSQL';
-    const attention = getAttentionEmployees().length;
-    elements.attendanceException.hidden = attention === 0;
-    elements.attendanceAttentionCount.textContent = attention + (attention === 1 ? ' record needs review' : ' records need review');
-    elements.includedCount.textContent = summary.includedCount + ' / ' + summary.employeeCount + ' included';
-    elements.actionEmployees.textContent = formatNumber(summary.includedCount) + ' employees';
-    elements.actionDays.textContent = formatNumber(summary.includedDays);
-    elements.tableNoteEmployees.textContent = formatNumber(summary.includedCount) + ' employees included across all outlets';
-    elements.tableNoteDays.textContent = formatNumber(summary.includedDays) + ' eligible worked days';
+    elements.recordReference.textContent = state.confirmed?.reference || 'TS-' + elements.period.value;
+    elements.recordStatus.textContent = t(state.confirmed ? 'common.confirmed' : currentPreview() ? 'distribution.review' : 'distribution.draft');
+    elements.attendanceCoverage.textContent = t('attendance.coverage', { days, month: monthNames[month - 1].slice(0, 3), year });
+    elements.attendanceSource.textContent = t('attendance.source');
+    elements.includedCount.textContent = t('distribution.participantCount', { count: formatNumber(summary.participantCount) });
+    elements.actionEmployees.textContent = t('common.employeeCount', { count: formatNumber(summary.participantCount) });
+    elements.actionDays.textContent = formatNumber(summary.participantDays);
+    elements.tableNoteEmployees.textContent = t('distribution.participantCount', { count: formatNumber(summary.participantCount) });
+    elements.tableNoteDays.textContent = t('distribution.eligibleDays', { count: formatNumber(summary.participantDays) });
     elements.tips.readOnly = editingLocked();
-    elements.periodTrigger.disabled = state.confirming;
+    elements.periodTrigger.disabled = state.confirming || state.calculating;
+    elements.attendanceRetry.hidden = !state.attendanceError;
+    elements.attendanceRetry.disabled = state.loadingAttendance;
+    elements.attendanceState.textContent = state.loadingAttendance ? t('attendance.loading')
+        : state.attendanceReady && !getParticipants().length ? t('attendance.empty') : '';
+    elements.employeeRows.setAttribute('aria-busy', String(state.loadingAttendance));
     renderFilters();
-    renderEmployees(visible, summary);
+    renderDistributionEmployees(visible, summary);
     updateReconciliation();
 }
 
-function calculateDistribution() {
-    if (editingLocked()) return;
+async function calculateDistribution() {
+    if (editingLocked() || !state.attendanceReady || state.attendanceError) return;
     elements.workflowError.textContent = '';
     const tips = getTipsCents();
-    if (tips === null) {
-        elements.tipsError.textContent = 'Enter a non-negative euro amount with up to two decimal places.';
+    if (tips === null || tips <= 0) {
+        setMessage(elements.tipsError, 'distribution.positiveAmount');
         elements.tips.setAttribute('aria-invalid', 'true');
         elements.tips.focus();
         return;
     }
     elements.tipsError.textContent = '';
     elements.tips.removeAttribute('aria-invalid');
-    const participants = getIncludedEmployees().map(({ id, name, outlet, daysWorked }) => ({ id, name, outlet, daysWorked }));
-    const error = validateParticipants(participants);
-    if (error) {
-        elements.workflowError.textContent = error;
-        elements.includeVisibleButton.disabled ? elements.statusFilter.focus() : elements.includeVisibleButton.focus();
-        return;
-    }
-    state.preview = distributeTips(tips, participants);
-    state.previewStale = false;
+    if (!getParticipants().length) return;
+    state.calculating = true;
     render();
-    announce('Preview ready. ' + state.preview.employeeCount + ' employees. Allocated ' + formatCurrencyFromCents(state.preview.totalDistributedCents) + '. Difference zero.');
+    try {
+        const preview = await repository.preview(elements.period.value, tips);
+        if (state.attendanceRefreshNeeded) return;
+        state.distributionEmployees = syncCurrentLocationNames(preview.employees);
+        state.preview = preview;
+        state.previewStale = false;
+        announce('distribution.previewReady', { count: formatNumber(preview.employeeCount), amount: formatCurrencyFromCents(preview.totalDistributedCents) });
+    } catch (error) {
+        state.preview = null;
+        state.previewStale = false;
+        setError(elements.workflowError, error);
+    } finally {
+        state.calculating = false;
+        render();
+        refreshDistributionAttendance();
+    }
 }
 
 function openDialog(dialog, focusTarget) {
@@ -507,24 +703,6 @@ async function confirmDistribution() {
     }
 
     const draftId = state.draftId;
-    const [periodYear, periodMonth] = elements.period.value
-        .split('-')
-        .map(Number);
-
-    const reference =
-        'TS-DEMO-' +
-        elements.period.value +
-        '-' +
-        draftId.slice(0, 8).toUpperCase();
-
-    const snapshot = buildDistributionSnapshot(
-        state.preview,
-        state.employees,
-        periodYear,
-        periodMonth,
-        reference
-    );
-
     state.confirming = true;
     elements.confirmDialog.setAttribute(
         'aria-busy',
@@ -550,7 +728,7 @@ async function confirmDistribution() {
 
         const record = await repository.confirm(
             draftId,
-            snapshot
+            state.preview
         );
 
         const responseError =
@@ -562,28 +740,9 @@ async function confirmDistribution() {
 
         const confirmed = structuredClone(record);
 
-        const evidence = new Map(
-            (confirmed.attendanceSnapshot || []).map(
-                employee => [employee.id, employee]
-            )
-        );
-
-        const payments = new Map(
-            confirmed.payments.map(
-                payment => [payment.id, payment]
-            )
-        );
-
-        const employees = state.employees.map(employee => ({
-            ...employee,
-            ...evidence.get(employee.id),
-            included: payments.has(employee.id),
-            ...(payments.has(employee.id)
-                ? {
-                    daysWorked:
-                        payments.get(employee.id).daysWorked
-                }
-                : {})
+        // Confirmed rows come exclusively from persisted employee/allocation snapshots.
+        const employees = confirmed.payments.map(payment => ({
+            ...payment, eligible: true, attendance: []
         }));
 
         const pool = formatCents(
@@ -591,7 +750,7 @@ async function confirmDistribution() {
         );
 
         const timestamp = new Intl.DateTimeFormat(
-            'en-IE',
+            i18n.locale(),
             {
                 dateStyle: 'medium',
                 timeStyle: 'short'
@@ -599,24 +758,25 @@ async function confirmDistribution() {
         ).format(new Date(confirmed.createdAt));
 
         state.confirmed = confirmed;
-        state.employees = employees;
+        invalidateHistory();
+        state.distributionEmployees = employees;
 
         elements.tips.value = pool;
         elements.confirmDialog.close();
 
         render();
 
-        elements.workflowNotice.textContent =
-            'Confirmed ' +
-            timestamp +
-            '. Distribution saved successfully. Select another period to prepare a new distribution.';
+        setMessage(elements.workflowNotice, 'distribution.confirmedNotice', { date: timestamp });
 
-        announce(
-            'Distribution confirmed and saved.'
-        );
+        announce('distribution.saved');
     } catch (error) {
-        elements.confirmError.textContent =
-            error.message;
+        setError(elements.confirmError, error);
+        if (error.code === 'DUPLICATE_DISTRIBUTION') invalidateHistory();
+        if (error.code === 'PREVIEW_STALE') {
+            state.previewStale = true;
+            elements.confirmDialog.close();
+            setError(elements.workflowError, error);
+        }
     } finally {
         state.confirming = false;
 
@@ -636,33 +796,38 @@ async function confirmDistribution() {
     }
 }
 
-function openAttendanceDialog(employeeId) {
-    const employee = state.employees.find(item => item.id === employeeId);
+function openAttendanceDialog(employeeId, refresh = false) {
+    const employee = state.distributionEmployees.find(item => item.id === employeeId);
     if (!employee) return;
     state.attendanceEmployeeId = employeeId;
     elements.attendanceEmployeeName.textContent = employee.name;
     elements.attendanceEmployeeReference.textContent = employee.reference;
-    elements.attendanceEmployeeContext.textContent = [employee.role, employee.outlet].filter(Boolean).join(' · ');
+    elements.attendanceEmployeeContext.textContent = [
+        employee.role,
+        window.TipSplitSettings?.locationsEnabled() === false ? '' : getEmployeeLocationLabel(employee)
+    ].filter(Boolean).join(' · ');
     elements.attendancePeriodLabel.textContent = formatPeriod(elements.period.value);
     elements.attendanceTotalDays.textContent = formatNumber(employee.daysWorked);
     elements.attendanceTotalHours.textContent = formatHours(employee.workedMinutes);
-    elements.attendanceReviewNote.hidden = !employee.attention;
-    elements.attendanceReviewNote.textContent = employee.attentionReason + '. Review the demo attendance before including this employee.';
-    elements.reviewAttendance.hidden = !employee.attention || employee.daysWorked === 0 || editingLocked();
+    elements.attendanceReviewNote.hidden = !state.confirmed;
+    elements.attendanceReviewNote.textContent = state.confirmed ? t('attendance.snapshotNote') : '';
+    elements.attendanceTableWrapper.hidden = Boolean(state.confirmed);
     elements.attendanceRecords.replaceChildren(...employee.attendance.map(record => {
         const row = document.createElement('tr');
         row.className = record.status === 'day-off' ? 'attendance-row-off' : record.status === 'absence' ? 'attendance-row-absence' : '';
         const date = new Date(record.date + 'T12:00:00Z');
-        const dateLabel = new Intl.DateTimeFormat('en-IE', { weekday: 'short', day: '2-digit', month: 'short', timeZone: 'UTC' }).format(date);
-        const status = record.status === 'worked' ? 'Worked' : record.status === 'absence' ? 'Absence' : 'Day off';
-        const duration = record.status === 'worked' ? Math.floor(record.workedMinutes / 60) + 'h ' + String(record.workedMinutes % 60).padStart(2, '0') + 'm' : '—';
+        const dateLabel = new Intl.DateTimeFormat(i18n.locale(), { weekday: 'short', day: '2-digit', month: 'short', timeZone: 'UTC' }).format(date);
+        const status = t(record.status === 'worked' ? 'attendance.worked' : record.status === 'absence' ? 'attendance.absence' : record.status === 'vacation' ? 'attendance.vacation' : 'attendance.dayOff');
+        const duration = record.status === 'worked' ? formatHours(record.workedMinutes) : '—';
         row.append(createCell(dateLabel), createCell(status, 'attendance-status ' + record.status), createCell(record.clockIn || '—', 'time-value'),
-            createCell(record.clockOut ? record.clockOut + (record.clockOutNextDay ? ' +1 day' : '') : '—', 'time-value'), createCell(duration, 'numeric-cell time-value'));
+            createCell(record.clockOut ? record.clockOut + (record.clockOutNextDay ? t('attendance.nextDay') : '') : '—', 'time-value'), createCell(duration, 'numeric-cell time-value'));
         return row;
     }));
-    openDialog(elements.attendanceDialog, elements.closeAttendanceDialog);
-    elements.attendanceTableWrapper.scrollTop = 0;
-    elements.attendanceTableWrapper.scrollLeft = 0;
+    if (!refresh) {
+        openDialog(elements.attendanceDialog, elements.closeAttendanceDialog);
+        elements.attendanceTableWrapper.scrollTop = 0;
+        elements.attendanceTableWrapper.scrollLeft = 0;
+    }
 }
 
 function bindDialog(dialog) {
@@ -725,8 +890,8 @@ function bindMonthPicker() {
     elements.previousYear.addEventListener('click', () => { state.monthPickerYear--; renderMonthPicker(); });
     elements.nextYear.addEventListener('click', () => { state.monthPickerYear++; renderMonthPicker(); });
     elements.currentMonthButton.addEventListener('click', () => {
-        const date = new Date();
-        selectPeriod(date.getFullYear(), date.getMonth() + 1);
+        const { year, month } = currentAttendancePeriod();
+        selectPeriod(year, month);
     });
     document.addEventListener('pointerdown', event => {
         if (!elements.periodControl.contains(event.target)) closeMonthPicker();
@@ -736,7 +901,7 @@ function bindMonthPicker() {
 function formatHistoryDate(value) {
     if (!value) return '—';
 
-    return new Intl.DateTimeFormat('en-IE', {
+    return new Intl.DateTimeFormat(i18n.locale(), {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
@@ -746,7 +911,7 @@ function formatHistoryDate(value) {
 }
 
 function formatAllocationMethod(value) {
-    if (value === 'worked_days') return 'Worked days';
+    if (value === 'worked_days') return t('common.workedDays');
     return value || '—';
 }
 
@@ -773,6 +938,20 @@ function createHistoryRow(distribution) {
         'numeric-cell history-pool'
     );
 
+    const allocatedCell = createCell(
+        formatCurrencyFromCents(
+            distribution.allocatedCents
+        ),
+        'numeric-cell'
+    );
+
+    const differenceCell = createCell(
+        formatCurrencyFromCents(
+            distribution.differenceCents
+        ),
+        'numeric-cell'
+    );
+
     const confirmedCell = createCell(
         formatHistoryDate(distribution.confirmedAt),
         'history-confirmed'
@@ -786,7 +965,7 @@ function createHistoryRow(distribution) {
     button.className = 'history-open';
     button.setAttribute(
         'aria-label',
-        'Open distribution ' + distribution.reference
+        t('history.open', { reference: distribution.reference })
     );
     button.innerHTML =
         '<i class="icon icon-arrow-right" aria-hidden="true"></i>';
@@ -802,6 +981,8 @@ function createHistoryRow(distribution) {
         periodCell,
         employeesCell,
         poolCell,
+        allocatedCell,
+        differenceCell,
         confirmedCell,
         actionCell
     );
@@ -814,27 +995,30 @@ function renderHistory() {
 
     if (state.historyLoading) {
         elements.historyFeedback.textContent =
-            'Loading distribution history…';
+            t('history.loading');
         elements.historyCount.textContent =
-            'Loading confirmed distributions';
+            t('history.loadingCount');
+        return;
+    }
+
+    if (state.historyError) {
+        setError(elements.historyFeedback, state.historyError, 'errors.loadHistory');
+        elements.historyCount.textContent = t('history.emptyCount');
         return;
     }
 
     if (!state.history.length) {
         elements.historyFeedback.textContent =
-            'No confirmed distributions found.';
+            t('history.empty');
         elements.historyCount.textContent =
-            'No confirmed distributions';
+            t('history.emptyCount');
         return;
     }
 
     elements.historyFeedback.textContent = '';
 
     elements.historyCount.textContent =
-        formatNumber(state.history.length) +
-        (state.history.length === 1
-            ? ' confirmed distribution'
-            : ' confirmed distributions');
+        t(state.history.length === 1 ? 'history.countOne' : 'history.countMany', { count: formatNumber(state.history.length) });
 
     const fragment = document.createDocumentFragment();
 
@@ -845,27 +1029,34 @@ function renderHistory() {
     elements.historyRows.append(fragment);
 }
 
+function invalidateHistory() {
+    historyRevision++;
+    state.historyLoaded = false;
+}
+
 async function loadHistory() {
     if (state.historyLoading) return;
+    const revision = historyRevision;
 
     state.historyLoading = true;
+    state.historyError = null;
     renderHistory();
 
     try {
         const result = await repository.loadHistory();
-
-        state.history = Array.isArray(result.distributions)
-            ? result.distributions
-            : [];
+        if (revision !== historyRevision) return;
+        state.history = result.distributions;
 
         state.historyLoaded = true;
     } catch (error) {
+        if (revision !== historyRevision) return;
         state.history = [];
-        elements.historyFeedback.textContent =
-            error.message || 'Failed to load distribution history.';
+        state.historyError = error;
+        setError(elements.historyFeedback, error, 'errors.loadHistory');
     } finally {
         state.historyLoading = false;
         renderHistory();
+        if (revision !== historyRevision && !elements.historyView.hidden) loadHistory();
     }
 }
 
@@ -875,7 +1066,7 @@ function renderHistoryDetail() {
     if (!distribution) return;
 
     elements.historyDetailHeading.textContent =
-        formatPeriod(distribution.periodStart) + ' distribution';
+        t('common.distributionHeading', { period: formatPeriod(distribution.periodStart) });
 
     elements.historyDetailReference.textContent =
         distribution.reference;
@@ -910,6 +1101,7 @@ function renderHistoryDetail() {
 
         const employeeCell = document.createElement('td');
         const identity = document.createElement('div');
+
         identity.className = 'employee-identity';
 
         const name = document.createElement('strong');
@@ -923,8 +1115,13 @@ function renderHistoryDetail() {
 
         row.append(
             employeeCell,
-            createCell(item.outlet),
             createCell(item.role),
+            createCell(
+                Array.isArray(item.locations) &&
+                item.locations.length
+                    ? item.locations.join(', ')
+                    : '—'
+            ),
             createCell(
                 formatNumber(item.workedDays),
                 'numeric-cell'
@@ -946,8 +1143,7 @@ function renderHistoryDetail() {
 }
 
 async function openHistoryDistribution(id) {
-    elements.historyFeedback.textContent =
-        'Loading distribution…';
+    setMessage(elements.historyFeedback, 'history.loadingDetail');
 
     try {
         const distribution =
@@ -957,7 +1153,9 @@ async function openHistoryDistribution(id) {
 
         renderHistoryDetail();
 
+        elements.historyPageHeader.hidden = true;
         elements.historyList.hidden = true;
+        elements.historySummaryLine.hidden = true;
         elements.historyDetail.hidden = false;
         elements.historyFeedback.textContent = '';
 
@@ -970,8 +1168,7 @@ async function openHistoryDistribution(id) {
             behavior: 'smooth'
         });
     } catch (error) {
-        elements.historyFeedback.textContent =
-            error.message || 'Failed to load distribution.';
+        setError(elements.historyFeedback, error, 'errors.loadDistribution');
     }
 }
 
@@ -980,6 +1177,8 @@ function closeHistoryDistribution() {
 
     elements.historyDetail.hidden = true;
     elements.historyList.hidden = false;
+    elements.historyPageHeader.hidden = false;
+    elements.historySummaryLine.hidden = false;
 
     elements.historyHeading.focus({
         preventScroll: true
@@ -991,96 +1190,145 @@ function getFilteredEmployees() {
         .trim()
         .toLowerCase();
 
-    const outletId = elements.employeesOutletFilter.value;
-    const status = elements.employeesStatusFilter.value;
+    const locationId = employeesLocationValue;
+    const status = employeesStatusValue;
 
-    return state.employees.filter(employee => {
+    return state.employeeDirectory.filter(employee => {
+        const locations =
+            getEmployeeLocationNames(employee);
+
         const matchesSearch =
             !search ||
-            employee.name.toLowerCase().includes(search) ||
-            employee.employeeCode.toLowerCase().includes(search) ||
-            employee.role.toLowerCase().includes(search);
+            employee.name
+                .toLowerCase()
+                .includes(search) ||
+            employee.employeeCode
+                .toLowerCase()
+                .includes(search) ||
+            employee.role
+                .toLowerCase()
+                .includes(search) ||
+            (window.TipSplitSettings?.locationsEnabled() !== false && locations.some(location =>
+                location
+                    .toLowerCase()
+                    .includes(search)
+            ));
 
-        const matchesOutlet =
-            !outletId ||
-            String(employee.outletId) === outletId;
+        const matchesLocation =
+            locationId === 'all' ||
+            (employee.locations || []).some(
+                location =>
+                    String(location.id) === locationId
+            );
 
         const matchesStatus =
-            !status ||
-            (status === 'active' && employee.active) ||
-            (status === 'inactive' && !employee.active);
+            status === 'all' ||
+            (
+                status === 'active' &&
+                employee.active
+            ) ||
+            (
+                status === 'inactive' &&
+                !employee.active
+            );
 
-        return matchesSearch && matchesOutlet && matchesStatus;
+        return (
+            matchesSearch &&
+            matchesLocation &&
+            matchesStatus
+        );
     });
 }
 
-function populateEmployeeOutletFilter() {
-    const outlets = [
-        ...new Map(
-            state.employees.map(employee => [
-                employee.outletId,
-                {
-                    id: employee.outletId,
-                    name: employee.outlet
-                }
-            ])
-        ).values()
-    ].sort((a, b) => a.name.localeCompare(b.name));
+function populateEmployeeLocationFilter() {
+    const options = [
+        {
+            value: 'all',
+            label: t('common.allLocations')
+        },
+        ...state.locations.map(location => ({
+            value: String(location.id),
+            label: location.name
+        }))
+    ];
 
-    elements.employeesOutletFilter.innerHTML =
-        '<option value="">All outlets</option>';
+    employeesLocationSelect.update(
+        options,
+        employeesLocationValue
+    );
+}
 
-    outlets.forEach(outlet => {
-        const option = document.createElement('option');
-
-        option.value = String(outlet.id);
-        option.textContent = outlet.name;
-
-        elements.employeesOutletFilter.append(option);
-    });
+function populateEmployeeStatusFilter() {
+    employeesStatusSelect.update(
+        [
+            {
+                value: 'all',
+                label: t('common.allEmployees')
+            },
+            {
+                value: 'active',
+                label: t('common.active')
+            },
+            {
+                value: 'inactive',
+                label: t('common.inactive')
+            }
+        ],
+        employeesStatusValue
+    );
 }
 
 function createEmployeeManagementRow(employee) {
     const row = document.createElement('tr');
+
+    const codeCell = document.createElement('td');
+    codeCell.textContent = employee.employeeCode;
 
     const employeeCell = document.createElement('td');
 
     const name = document.createElement('strong');
     name.textContent = employee.name;
 
-    const code = document.createElement('span');
-    code.textContent = employee.employeeCode;
-
-    employeeCell.append(name, code);
+    employeeCell.append(name);
 
     const roleCell = document.createElement('td');
     roleCell.textContent = employee.role;
 
-    const outletCell = document.createElement('td');
-    outletCell.textContent = employee.outlet;
+    const locationsCell = document.createElement('td');
+    locationsCell.textContent =
+        getEmployeeLocationLabel(employee);
 
     const emailCell = document.createElement('td');
-    emailCell.textContent = employee.email || '—';
+    emailCell.textContent =
+        employee.email || '—';
 
     const statusCell = document.createElement('td');
-    statusCell.textContent = employee.active
-        ? 'Active'
-        : 'Inactive';
+    statusCell.textContent =
+        employee.active
+            ? t('common.active')
+            : t('common.inactive');
 
     const actionCell = document.createElement('td');
 
-    const editButton = document.createElement('button');
+    const editButton =
+        document.createElement('button');
+
     editButton.type = 'button';
-    editButton.className = 'employee-edit-button';
-    editButton.dataset.employeeId = String(employee.id);
-    editButton.textContent = 'Edit';
+    editButton.className =
+        'employee-edit-button';
+
+    editButton.dataset.employeeId =
+        String(employee.id);
+
+    editButton.textContent = t('common.edit');
 
     actionCell.append(editButton);
 
     row.append(
+        codeCell,
         employeeCell,
         roleCell,
-        outletCell,
+        locationsCell,
         emailCell,
         statusCell,
         actionCell
@@ -1094,26 +1342,27 @@ function renderEmployees() {
 
     if (state.employeesLoading) {
         elements.employeesCount.textContent =
-            'Loading employees...';
+            t('employees.loading');
 
         return;
     }
 
     if (!state.employeesLoaded) {
+        elements.employeesCount.textContent = '';
         return;
     }
 
     const employees = getFilteredEmployees();
 
     elements.employeesCount.textContent =
-        `${state.employees.length} employees`;
+        t('common.employeeCount', { count: formatNumber(state.employeeDirectory.length) });
 
     if (employees.length === 0) {
         const row = document.createElement('tr');
         const cell = document.createElement('td');
 
-        cell.colSpan = 6;
-        cell.textContent = 'No employees match these filters.';
+        cell.colSpan = window.TipSplitSettings?.locationsEnabled() === false ? 6 : 7;
+        cell.textContent = t('employees.noMatches');
 
         row.append(cell);
         elements.employeesRows.append(row);
@@ -1135,58 +1384,109 @@ async function loadEmployees() {
 
     state.employeesLoading = true;
     elements.employeesFeedback.textContent = '';
+
     renderEmployees();
 
     try {
-        state.employees = await repository.loadEmployees();
-        state.employeesLoaded = true;
+        const [employees] = await Promise.all([
+            repository.loadEmployees(),
+            state.locationsLoaded
+                ? Promise.resolve(state.locations)
+                : loadLocations()
+        ]);
 
-        populateEmployeeOutletFilter();
+        state.employeeDirectory = syncCurrentLocationNames(employees);
+
+        state.employeesLoaded = true;
+        state.locationsLoaded = true;
+
+        populateEmployeeLocationFilter();
+        populateEmployeeStatusFilter();
     } catch (error) {
-        state.employees = [];
-        elements.employeesFeedback.textContent =
-            error.message || 'Failed to load employees.';
+        state.employeeDirectory = [];
+
+        setError(elements.employeesFeedback, error, 'errors.loadEmployees');
     } finally {
         state.employeesLoading = false;
         renderEmployees();
     }
 }
 
-function populateEmployeeFormOutlets() {
-    const outlets = [
-        ...new Map(
-            state.employees.map(employee => [
-                employee.outletId,
-                {
-                    id: employee.outletId,
-                    name: employee.outlet
-                }
-            ])
-        ).values()
-    ].sort((a, b) => a.name.localeCompare(b.name));
+function populateEmployeeFormLocations(employee = state.employeeDirectory.find(item => item.id === state.editingEmployeeId)) {
+    elements.employeeFormLocations.replaceChildren();
+    const assigned = new Set((employee?.locations || []).map(location => Number(location.id)));
 
-    elements.employeeFormOutlet.replaceChildren();
+    state.locations
+        .filter(location => location.active !== false || assigned.has(Number(location.id)))
+        .sort((a, b) =>
+            a.name.localeCompare(b.name)
+        )
+        .forEach(location => {
+            const label =
+                document.createElement('label');
 
-    outlets.forEach(outlet => {
-        const option = document.createElement('option');
+            label.className =
+                'employee-location-option';
 
-        option.value = String(outlet.id);
-        option.textContent = outlet.name;
+            const checkbox =
+                document.createElement('input');
 
-        elements.employeeFormOutlet.append(option);
-    });
+            checkbox.type = 'checkbox';
+            checkbox.name = 'employee-location';
+            checkbox.value = String(location.id);
+            checkbox.disabled = location.active === false;
+
+            const text =
+                document.createElement('span');
+
+            text.textContent = location.active === false
+                ? t('employees.inactiveLocation', { name: location.name })
+                : location.name;
+
+            label.append(
+                checkbox,
+                text
+            );
+
+            elements.employeeFormLocations.append(
+                label
+            );
+        });
 }
 
-function openEmployeeForm(employee = null) {
-    state.editingEmployeeId = employee?.id ?? null;
+async function openEmployeeForm(employee = null) {
+    if (state.savingEmployee || state.openingEmployee || elements.employeeDialog.open) return;
+    state.openingEmployee = true;
+    employeeDialogOrigin = document.activeElement;
+    state.editingEmployeeId =
+        employee?.id ?? null;
 
-    populateEmployeeFormOutlets();
+    if (!state.locationsLoaded) {
+        try {
+            state.locations =
+                await loadLocations();
+
+            state.locationsLoaded = true;
+
+            populateEmployeeLocationFilter();
+        } catch (error) {
+            setError(elements.employeesFeedback, error, 'errors.loadLocations');
+            state.openingEmployee = false;
+            return;
+        }
+    }
+
+    populateEmployeeFormLocations(employee);
 
     elements.employeeDialogTitle.textContent =
-        employee ? 'Edit employee' : 'Add employee';
+        employee
+            ? t('employees.edit')
+            : t('employees.add');
 
     elements.saveEmployee.textContent =
-        employee ? 'Save changes' : 'Add employee';
+        employee
+            ? t('common.saveChanges')
+            : t('employees.add');
 
     elements.employeeFormCode.value =
         employee?.employeeCode ?? '';
@@ -1200,17 +1500,54 @@ function openEmployeeForm(employee = null) {
     elements.employeeFormRole.value =
         employee?.role ?? '';
 
-    elements.employeeFormOutlet.value =
-        employee ? String(employee.outletId) : '';
+    const selectedLocationIds = new Set(
+        (employee?.locations || []).map(
+            location => String(location.id)
+        )
+    );
+
+    elements.employeeFormLocations
+        .querySelectorAll(
+            'input[name="employee-location"]'
+        )
+        .forEach(input => {
+            input.checked =
+                selectedLocationIds.has(
+                    input.value
+                );
+        });
 
     elements.employeeFormActive.checked =
         employee?.active ?? true;
 
     elements.employeeFormError.textContent = '';
+    renderEmployeeSavingState();
 
     elements.employeeDialog.showModal();
-
+    state.openingEmployee = false;
     elements.employeeFormCode.focus();
+}
+
+function renderEmployeeSavingState() {
+    const busy = state.savingEmployee;
+    elements.employeeDialogTitle.textContent = t(state.editingEmployeeId === null
+        ? 'employees.add' : 'employees.edit');
+    [elements.employeeFormCode, elements.employeeFormName, elements.employeeFormEmail,
+        elements.employeeFormRole, elements.employeeFormActive, elements.saveEmployee,
+        elements.cancelEmployeeForm, elements.closeEmployeeDialog].forEach(control => {
+        control.disabled = busy;
+    });
+    elements.employeeFormLocations.closest('fieldset').disabled = busy;
+    elements.employeeForm.setAttribute('aria-busy', String(busy));
+    elements.employeeDialog.setAttribute('aria-busy', String(busy));
+    elements.saveEmployee.textContent = t(busy ? 'common.saving'
+        : state.editingEmployeeId === null ? 'employees.add' : 'common.saveChanges');
+}
+
+function refreshDistributionAttendance() {
+    if (!state.attendanceRefreshNeeded || state.confirmed || state.calculating || state.confirming) return;
+    const { year, month } = parseAttendancePeriod(elements.period.value);
+    selectPeriod(year, month, true);
 }
 
 function closeEmployeeForm() {
@@ -1230,17 +1567,58 @@ async function saveEmployee(event) {
         return;
     }
 
+    for (const [input, field] of [
+        [elements.employeeFormCode, 'fields.employeeCode'],
+        [elements.employeeFormName, 'fields.name'],
+        [elements.employeeFormRole, 'fields.role']
+    ]) {
+        if (!input.value.trim()) {
+            setMessage(elements.employeeFormError, 'employees.requiredField', { field: t(field), fieldKey: field });
+            input.focus();
+            return;
+        }
+    }
+    if (elements.employeeFormEmail.validity.typeMismatch) {
+        setMessage(elements.employeeFormError, 'employees.invalidEmail');
+        elements.employeeFormEmail.focus();
+        return;
+    }
+
+    const locationIds = [
+        ...elements.employeeFormLocations
+            .querySelectorAll(
+                'input[name="employee-location"]:checked'
+            )
+    ].map(input => Number(input.value));
+
     const employee = {
-        employeeCode: elements.employeeFormCode.value.trim(),
-        name: elements.employeeFormName.value.trim(),
-        email: elements.employeeFormEmail.value.trim() || null,
-        role: elements.employeeFormRole.value.trim(),
-        outletId: Number(elements.employeeFormOutlet.value),
-        active: elements.employeeFormActive.checked
+        employeeCode:
+            elements.employeeFormCode.value.trim(),
+
+        name:
+            elements.employeeFormName.value.trim(),
+
+        email:
+            elements.employeeFormEmail.value.trim() ||
+            null,
+
+        role:
+            elements.employeeFormRole.value.trim(),
+
+        active:
+            elements.employeeFormActive.checked
     };
 
+    if (window.TipSplitSettings?.locationsEnabled() !== false) {
+        const original = state.employeeDirectory.find(item => item.id === state.editingEmployeeId);
+        const inactiveIds = (original?.locations || []).filter(location =>
+            state.locations.find(item => Number(item.id) === Number(location.id))?.active === false
+        ).map(location => Number(location.id));
+        employee.locationIds = [...new Set([...locationIds, ...inactiveIds])];
+    }
+
     state.savingEmployee = true;
-    elements.saveEmployee.disabled = true;
+    renderEmployeeSavingState();
     elements.employeeFormError.textContent = '';
 
     try {
@@ -1250,7 +1628,7 @@ async function saveEmployee(event) {
             savedEmployee =
                 await repository.createEmployee(employee);
 
-            state.employees.push(savedEmployee);
+            state.employeeDirectory.push(savedEmployee);
         } else {
             savedEmployee =
                 await repository.updateEmployee(
@@ -1258,28 +1636,53 @@ async function saveEmployee(event) {
                     employee
                 );
 
-            const index = state.employees.findIndex(
+            const index = state.employeeDirectory.findIndex(
                 item => item.id === state.editingEmployeeId
             );
 
             if (index !== -1) {
-                state.employees[index] = savedEmployee;
+                state.employeeDirectory[index] = savedEmployee;
             }
         }
 
-        populateEmployeeOutletFilter();
+        populateEmployeeLocationFilter();
         renderEmployees();
+        if (!state.confirmed) {
+            state.attendanceRefreshNeeded = true;
+            invalidatePreview();
+            refreshDistributionAttendance();
+        }
 
         elements.employeeDialog.close();
         elements.employeeForm.reset();
         state.editingEmployeeId = null;
     } catch (error) {
-        elements.employeeFormError.textContent =
-            error.message || 'Failed to save employee.';
+        setError(elements.employeeFormError, error, 'errors.saveEmployee');
     } finally {
         state.savingEmployee = false;
-        elements.saveEmployee.disabled = false;
+        renderEmployeeSavingState();
+        if (elements.employeeDialog.open) elements.saveEmployee.focus();
     }
+}
+
+async function loadLocations() {
+    if (state.locationsLoaded) {
+        return state.locations;
+    }
+
+    if (!locationsRequest) {
+        locationsRequest = repository.loadLocations()
+            .then(locations => {
+                state.locations = locations;
+                state.locationsLoaded = true;
+                return locations;
+            })
+            .finally(() => {
+                locationsRequest = null;
+            });
+    }
+
+    return locationsRequest;
 }
 
 function showView(view, focus = false) {
@@ -1289,62 +1692,85 @@ function showView(view, focus = false) {
 
     closeOpenControls();
 
-    elements.distributionView.hidden = view !== 'distribution';
-    elements.employeesView.hidden = view !== 'employees';
-    elements.historyView.hidden = view !== 'history';
-    elements.placeholderView.hidden = view !== 'settings';
+    elements.distributionView.hidden =
+        view !== 'distribution';
+
+    elements.employeesView.hidden =
+        view !== 'employees';
+
+    elements.historyView.hidden =
+        view !== 'history';
+
+    elements.settingsView.hidden =
+        view !== 'settings';
 
     if (view !== 'history') {
         state.historyDetail = null;
         elements.historyDetail.hidden = true;
         elements.historyList.hidden = false;
-    }
-
-    if (view === 'settings') {
-        elements.placeholderTitle.textContent = 'Settings';
+        elements.historyPageHeader.hidden = false;
+        elements.historySummaryLine.hidden = false;
     }
 
     document
-        .querySelectorAll('.main-navigation a, .settings-button')
+        .querySelectorAll('.main-navigation a')
         .forEach(link => {
+            const active =
+                link.dataset.view === view;
+
             link.classList.toggle(
                 'active',
-                link.dataset.view === view
+                active
             );
 
-            if (link.dataset.view === view) {
-                link.setAttribute('aria-current', 'page');
+            if (active) {
+                link.setAttribute(
+                    'aria-current',
+                    'page'
+                );
             } else {
-                link.removeAttribute('aria-current');
+                link.removeAttribute(
+                    'aria-current'
+                );
             }
         });
 
-    const titles = {
-        distribution: 'Distribution',
-        employees: 'Employees',
-        history: 'History',
-        settings: 'Settings'
-    };
+    document.title = 'Tip Split — ' + t('nav.' + view);
 
-    document.title = 'Tip Split — ' + titles[view];
-
-    if (view === 'history' && !state.historyLoaded) {
+    if (
+        view === 'history' &&
+        !state.historyLoaded
+    ) {
         loadHistory();
     }
 
-    if (view === 'employees' && !state.employeesLoaded) {
+    if (
+        view === 'employees' &&
+        !state.employeesLoaded
+    ) {
         loadEmployees();
     }
 
     if (focus) {
-        const target =
-            view === 'distribution'
-                ? elements.pageTitle
-                : view === 'history'
-                    ? elements.historyHeading
-                    : elements.placeholderTitle;
+        const targets = {
+            distribution:
+                elements.pageTitle,
 
-        target.focus();
+            employees:
+                elements.employeesHeading,
+
+            history:
+                elements.historyHeading,
+
+            settings:
+                elements.settingsHeading
+        };
+
+        targets[view]?.focus();
+    }
+
+    if (view === 'settings') {
+        window.TipSplitSettings?.loadLocations();
     }
 }
 
@@ -1353,13 +1779,26 @@ function bindEvents() {
     bindMonthPicker();
     bindDialog(elements.confirmDialog);
     bindDialog(elements.attendanceDialog);
+    elements.employeeDialog.addEventListener('cancel', event => {
+        event.preventDefault();
+        closeEmployeeForm();
+    });
+    elements.employeeDialog.addEventListener('close', () => {
+        if (elements.employeeDialog.open) return;
+        const originId = employeeDialogOrigin?.dataset.employeeId;
+        const replacement = [...elements.employeesRows.querySelectorAll('.employee-edit-button')]
+            .find(button => button.dataset.employeeId === originId);
+        elements.employeeForm.reset();
+        state.editingEmployeeId = null;
+        (employeeDialogOrigin?.isConnected ? employeeDialogOrigin : replacement || elements.addEmployee).focus();
+    });
     document.querySelector('.skip-link').addEventListener('click', event => {
         event.preventDefault();
         document.getElementById('main-content').focus();
     });
     window.addEventListener('hashchange', () => showView(location.hash.slice(1), true));
-    elements.historyBack.addEventListener('click', closeHistoryDistribution);      
-    elements.employeeSearch.addEventListener('input', () => { state.search = elements.employeeSearch.value; render(); announce(getVisibleEmployees().length + ' employees visible.'); });
+    elements.historyBack.addEventListener('click', closeHistoryDistribution);
+    elements.employeeSearch.addEventListener('input', () => { state.search = elements.employeeSearch.value; render(); announce('employees.visibleAnnouncement', { count: formatNumber(getVisibleEmployees().length) }); });
     elements.tips.addEventListener('input', () => {
         if (editingLocked()) return;
         elements.tipsError.textContent = '';
@@ -1367,14 +1806,9 @@ function bindEvents() {
         invalidatePreview();
         render();
     });
-    elements.includeVisibleButton.addEventListener('click', () => {
-        if (editingLocked()) return;
-        getVisibleEmployees().filter(employee => !employee.attention && employee.daysWorked > 0).forEach(employee => { employee.included = true; });
-        invalidatePreview(); render(); announce(getIncludedEmployees().length + ' employees included.');
-    });
-    elements.attendanceDetailsButton.addEventListener('click', () => {
-        state.search = ''; state.outlet = 'all'; state.status = 'attention'; elements.employeeSearch.value = '';
-        render(); elements.statusFilter.focus(); announce(getAttentionEmployees().length + ' records need review.');
+    elements.attendanceRetry.addEventListener('click', () => {
+        const { year, month } = parseAttendancePeriod(elements.period.value);
+        selectPeriod(year, month, true);
     });
     elements.calculateButton.addEventListener('click', () => currentPreview() ? openConfirmationDialog() : calculateDistribution());
     elements.closeDialog.addEventListener('click', () => { if (!state.confirming) elements.confirmDialog.close(); });
@@ -1382,32 +1816,11 @@ function bindEvents() {
     elements.confirmDistribution.addEventListener('click', confirmDistribution);
     elements.closeAttendanceDialog.addEventListener('click', () => elements.attendanceDialog.close());
     elements.attendanceDialogDone.addEventListener('click', () => elements.attendanceDialog.close());
-    elements.reviewAttendance.addEventListener('click', () => {
-        if (editingLocked()) return;
-        const employee = state.employees.find(item => item.id === state.attendanceEmployeeId);
-        if (!employee || employee.daysWorked === 0) return;
-        employee.attention = false; employee.attentionReason = ''; employee.attendanceReviewed = true;
-        elements.reviewAttendance.hidden = true;
-        elements.attendanceReviewNote.hidden = false;
-        elements.attendanceReviewNote.textContent = 'Attendance reviewed. Include this employee from the workspace when ready.';
-        elements.attendanceDialogDone.focus(); render(); announce('Attendance reviewed for ' + employee.name + '.');
-    });
-
     elements.employeesSearch.addEventListener(
         'input',
         renderEmployees
     );
 
-    elements.employeesOutletFilter.addEventListener(
-        'change',
-        renderEmployees
-    );
-
-    elements.employeesStatusFilter.addEventListener(
-        'change',
-        renderEmployees
-    );
-    
     elements.addEmployee.addEventListener(
         'click',
         () => openEmployeeForm()
@@ -1428,7 +1841,7 @@ function bindEvents() {
                 button.dataset.employeeId
             );
 
-            const employee = state.employees.find(
+            const employee = state.employeeDirectory.find(
                 item => item.id === employeeId
             );
 
@@ -1456,22 +1869,55 @@ function bindEvents() {
 
 async function initialize() {
     try { repository = createDistributionRepository(); }
-    catch (error) { elements.storageNotice.textContent = error.message; elements.storageNotice.hidden = false; }
+    catch (error) { setError(elements.storageNotice, error); elements.storageNotice.hidden = false; }
+    const { year, month } = currentAttendancePeriod();
+    elements.period.value = String(year) + '-' + String(month).padStart(2, '0');
+    state.monthPickerYear = year;
     state.draftId = createStableId();
     bindEvents();
-    const request = ++attendanceRequest;
-    state.loadingAttendance = true;
     render(); showView(location.hash.slice(1));
-    try {
-        const employees = await (repository ? repository.loadAttendance(elements.period.value) : createDemoAttendance(defaultEmployees, elements.period.value));
-        if (request !== attendanceRequest) return;
-        state.employees = employees;
-    } catch (error) {
-        if (request !== attendanceRequest) return;
-        elements.workflowError.textContent = error.message;
-    } finally {
-        if (request === attendanceRequest) { state.loadingAttendance = false; render(); }
-    }
+    await selectPeriod(year, month, true);
 }
 
+window.addEventListener('tipsplit:languagechange', () => {
+    const activeMessages = [...localizedMessages].filter(([node, message]) => node.textContent === message.last);
+    updateMonthNames();
+    render();
+    renderHistory();
+    renderHistoryDetail();
+    renderEmployees();
+    populateEmployeeLocationFilter();
+    populateEmployeeStatusFilter();
+    renderEmployeeSavingState();
+    renderMonthPicker();
+    if (elements.attendanceDialog.open) openAttendanceDialog(state.attendanceEmployeeId, true);
+    if (elements.confirmDialog.open && state.preview) {
+        elements.confirmPeriod.textContent = formatPeriod(elements.period.value);
+        elements.confirmTotal.textContent = formatCurrencyFromCents(state.preview.totalTipsCents);
+        elements.confirmEmployees.textContent = formatNumber(state.preview.employeeCount);
+        elements.confirmDays.textContent = formatNumber(state.preview.totalWorkedDays);
+    }
+    if (elements.employeeDialog.open) {
+        const selected = new Set([...elements.employeeFormLocations.querySelectorAll('input:checked')].map(input => input.value));
+        populateEmployeeFormLocations();
+        elements.employeeFormLocations.querySelectorAll('input').forEach(input => { input.checked = selected.has(input.value); });
+        elements.employeeDialogTitle.textContent = t(state.editingEmployeeId === null ? 'employees.add' : 'employees.edit');
+        elements.saveEmployee.textContent = t(state.editingEmployeeId === null ? 'employees.add' : 'common.saveChanges');
+    }
+    activeMessages.forEach(([node, message]) => {
+        if (message.error) setError(node, message.error, message.fallbackKey);
+        else {
+            if (message.params.fieldKey) message.params.field = t(message.params.fieldKey);
+            if (message.key === 'distribution.previewReady' && state.preview) message.params.amount = formatCurrencyFromCents(state.preview.totalDistributedCents);
+            if (message.key === 'distribution.confirmedNotice' && state.confirmed) {
+                message.params.date = new Intl.DateTimeFormat(i18n.locale(), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(state.confirmed.createdAt));
+            }
+            setMessage(node, message.key, message.params);
+        }
+    });
+    const view = ['employees', 'history', 'settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'distribution';
+    document.title = 'Tip Split — ' + t('nav.' + view);
+});
+
+i18n.translate();
 initialize();

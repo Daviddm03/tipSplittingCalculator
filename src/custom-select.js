@@ -74,7 +74,7 @@ function createCustomSelect({ trigger, label, menu, onOpen, onChange }) {
             if (option.count !== undefined) {
                 const count = document.createElement('span');
                 count.className = 'option-count';
-                count.textContent = new Intl.NumberFormat('en-IE').format(option.count);
+                count.textContent = new Intl.NumberFormat(window.TipSplitI18n.locale()).format(option.count);
                 item.appendChild(count);
             }
             return item;
@@ -101,7 +101,7 @@ function createCustomSelect({ trigger, label, menu, onOpen, onChange }) {
         const now = Date.now();
         typed = now - lastTyped < 700 ? typed + key : key;
         lastTyped = now;
-        const normalize = text => text.toLocaleLowerCase('en').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const normalize = text => text.toLocaleLowerCase(window.TipSplitI18n.locale()).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         const query = normalize([...typed].every(character => character === typed[0]) ? key : typed);
         const start = query.length === 1 ? active + 1 : active;
         for (let offset = 0; offset < options.length; offset++) {

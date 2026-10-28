@@ -6,6 +6,7 @@
  "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "seed:locations": "node src/db/seeds/seedLocations.js",
     "seed:employees": "node src/db/seeds/seedEmployees.js",
     "seed:attendance": "node src/db/seeds/seedAttendance.js",
     "test:distribution": "node src/services/distributionService.test.js"

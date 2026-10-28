@@ -6,6 +6,7 @@ const distributionController = require(
 const router = express.Router();
 
 router.get("/", distributionController.getDistributions);
+router.post("/preview", distributionController.previewDistribution);
 
 router.get(
     "/:id",
