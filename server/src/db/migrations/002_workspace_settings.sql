@@ -1,0 +1,17 @@
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS workspaces (
+    id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+    name VARCHAR(100) NOT NULL CHECK (name = BTRIM(name) AND CHAR_LENGTH(name) > 0),
+    locations_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO workspaces (id, name, locations_enabled)
+VALUES (1, 'Tivoli Porto', TRUE)
+ON CONFLICT (id) DO NOTHING;
+
+ALTER TABLE locations ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT TRUE;
+
+COMMIT;
